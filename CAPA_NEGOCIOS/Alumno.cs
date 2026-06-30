@@ -62,6 +62,16 @@ public class Alumno : Persona
         return mensaje(aprobado);
     }
 
+    public bool RegistrarPago(_Pago p, decimal costoNivel)
+    {
+        PagoCD pagoCD = new PagoCD();
+        decimal totalPagado = pagoCD.ObtenerTotalPagado(p.IdMatricula);
+        if (totalPagado + p.Monto > costoNivel)
+            return false;
+        else
+            return pagoCD.Insertar(p);
+    }
+
     public string PromoverAlumno(string nivelActual)
     {
         if (nivelActual == "Básico")
