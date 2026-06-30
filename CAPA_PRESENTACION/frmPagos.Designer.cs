@@ -43,7 +43,19 @@
             btnLimpiar = new Button();
             btnEliminar = new Button();
             dgvPagos = new DataGridView();
+            pnlDatosBancarios = new Panel();
+            label4 = new Label();
+            label3 = new Label();
+            label2 = new Label();
+            label1 = new Label();
+            btnCerrarPanel = new Button();
+            lblDocumento = new Label();
+            lblBeneficiario = new Label();
+            lblCuenta = new Label();
+            lblBanco = new Label();
+            sqlCommandBuilder1 = new Microsoft.Data.SqlClient.SqlCommandBuilder();
             ((System.ComponentModel.ISupportInitialize)dgvPagos).BeginInit();
+            pnlDatosBancarios.SuspendLayout();
             SuspendLayout();
             // 
             // lblTitulo
@@ -124,6 +136,7 @@
             cmbMetodoPago.Name = "cmbMetodoPago";
             cmbMetodoPago.Size = new Size(236, 28);
             cmbMetodoPago.TabIndex = 6;
+            cmbMetodoPago.SelectedIndexChanged += cmbMetodoPago_SelectedIndexChanged;
             // 
             // dtpFechaPago
             // 
@@ -141,26 +154,25 @@
             txtMonto.Name = "txtMonto";
             txtMonto.Size = new Size(236, 27);
             txtMonto.TabIndex = 8;
+            txtMonto.KeyPress += txtMonto_KeyPress;
             // 
             // lblSaldo
             // 
             lblSaldo.AutoSize = true;
             lblSaldo.ForeColor = Color.FromArgb(0, 192, 0);
-            lblSaldo.Location = new Point(127, 652);
+            lblSaldo.Location = new Point(104, 652);
             lblSaldo.Name = "lblSaldo";
-            lblSaldo.Size = new Size(21, 20);
+            lblSaldo.Size = new Size(0, 20);
             lblSaldo.TabIndex = 9;
-            lblSaldo.Text = "\"\"";
             // 
             // lblMensaje
             // 
             lblMensaje.AutoSize = true;
             lblMensaje.ForeColor = Color.Red;
-            lblMensaje.Location = new Point(127, 613);
+            lblMensaje.Location = new Point(104, 613);
             lblMensaje.Name = "lblMensaje";
-            lblMensaje.Size = new Size(21, 20);
+            lblMensaje.Size = new Size(0, 20);
             lblMensaje.TabIndex = 10;
-            lblMensaje.Text = "\"\"";
             // 
             // btnGuardar
             // 
@@ -213,19 +225,141 @@
             dgvPagos.BackgroundColor = Color.FromArgb(27, 42, 74);
             dgvPagos.BorderStyle = BorderStyle.None;
             dgvPagos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvPagos.Location = new Point(407, 230);
+            dgvPagos.Location = new Point(465, 244);
+            dgvPagos.MultiSelect = false;
             dgvPagos.Name = "dgvPagos";
-            dgvPagos.RowHeadersVisible = false;
-            dgvPagos.RowHeadersWidth = 51;
-            dgvPagos.Size = new Size(728, 428);
+            dgvPagos.RowHeadersWidth = 30;
+            dgvPagos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvPagos.Size = new Size(905, 428);
             dgvPagos.TabIndex = 14;
+            dgvPagos.SelectionChanged += dgvPagos_SelectionChanged;
+            // 
+            // pnlDatosBancarios
+            // 
+            pnlDatosBancarios.Controls.Add(label4);
+            pnlDatosBancarios.Controls.Add(label3);
+            pnlDatosBancarios.Controls.Add(label2);
+            pnlDatosBancarios.Controls.Add(label1);
+            pnlDatosBancarios.Controls.Add(btnCerrarPanel);
+            pnlDatosBancarios.Controls.Add(lblDocumento);
+            pnlDatosBancarios.Controls.Add(lblBeneficiario);
+            pnlDatosBancarios.Controls.Add(lblCuenta);
+            pnlDatosBancarios.Controls.Add(lblBanco);
+            pnlDatosBancarios.Location = new Point(146, 19);
+            pnlDatosBancarios.Name = "pnlDatosBancarios";
+            pnlDatosBancarios.Size = new Size(1028, 675);
+            pnlDatosBancarios.TabIndex = 15;
+            pnlDatosBancarios.Visible = false;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label4.ForeColor = Color.White;
+            label4.Location = new Point(505, 480);
+            label4.Name = "label4";
+            label4.Size = new Size(175, 31);
+            label4.TabIndex = 8;
+            label4.Text = "000-0000000-0";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label3.ForeColor = Color.White;
+            label3.Location = new Point(426, 367);
+            label3.Name = "label3";
+            label3.Size = new Size(396, 31);
+            label3.TabIndex = 7;
+            label3.Text = "Frankeny Antonio Castillo Paniagua";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.ForeColor = Color.White;
+            label2.Location = new Point(485, 266);
+            label2.Name = "label2";
+            label2.Size = new Size(131, 31);
+            label2.TabIndex = 6;
+            label2.Text = "835387382";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = Color.Gold;
+            label1.Location = new Point(339, 41);
+            label1.Name = "label1";
+            label1.Size = new Size(326, 54);
+            label1.TabIndex = 5;
+            label1.Text = "Datos Bancarios";
+            // 
+            // btnCerrarPanel
+            // 
+            btnCerrarPanel.BackColor = Color.Red;
+            btnCerrarPanel.FlatStyle = FlatStyle.Flat;
+            btnCerrarPanel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnCerrarPanel.ForeColor = Color.White;
+            btnCerrarPanel.Location = new Point(986, 3);
+            btnCerrarPanel.Name = "btnCerrarPanel";
+            btnCerrarPanel.Size = new Size(40, 40);
+            btnCerrarPanel.TabIndex = 4;
+            btnCerrarPanel.Text = "X";
+            btnCerrarPanel.UseVisualStyleBackColor = false;
+            btnCerrarPanel.Click += btnCerrarPanel_Click;
+            // 
+            // lblDocumento
+            // 
+            lblDocumento.AutoSize = true;
+            lblDocumento.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblDocumento.ForeColor = Color.Gold;
+            lblDocumento.Location = new Point(200, 480);
+            lblDocumento.Name = "lblDocumento";
+            lblDocumento.Size = new Size(293, 31);
+            lblDocumento.TabIndex = 3;
+            lblDocumento.Text = "Documento de Identidad: ";
+            // 
+            // lblBeneficiario
+            // 
+            lblBeneficiario.AutoSize = true;
+            lblBeneficiario.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblBeneficiario.ForeColor = Color.Gold;
+            lblBeneficiario.Location = new Point(265, 367);
+            lblBeneficiario.Name = "lblBeneficiario";
+            lblBeneficiario.Size = new Size(155, 31);
+            lblBeneficiario.TabIndex = 2;
+            lblBeneficiario.Text = "Beneficiario: ";
+            // 
+            // lblCuenta
+            // 
+            lblCuenta.AutoSize = true;
+            lblCuenta.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblCuenta.ForeColor = Color.Gold;
+            lblCuenta.Location = new Point(231, 266);
+            lblCuenta.Name = "lblCuenta";
+            lblCuenta.Size = new Size(227, 31);
+            lblCuenta.TabIndex = 1;
+            lblCuenta.Text = "Número de Cuenta: ";
+            // 
+            // lblBanco
+            // 
+            lblBanco.AutoSize = true;
+            lblBanco.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblBanco.ForeColor = Color.White;
+            lblBanco.Location = new Point(303, 139);
+            lblBanco.Name = "lblBanco";
+            lblBanco.Size = new Size(405, 41);
+            lblBanco.TabIndex = 0;
+            lblBanco.Text = " Banco Popular Dominicano";
             // 
             // frmPagos
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
-            ClientSize = new Size(1182, 753);
+            ClientSize = new Size(1582, 753);
+            Controls.Add(pnlDatosBancarios);
             Controls.Add(dgvPagos);
             Controls.Add(btnEliminar);
             Controls.Add(btnLimpiar);
@@ -245,7 +379,10 @@
             Name = "frmPagos";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Gestión de Pagos";
+            Load += frmPagos_Load;
             ((System.ComponentModel.ISupportInitialize)dgvPagos).EndInit();
+            pnlDatosBancarios.ResumeLayout(false);
+            pnlDatosBancarios.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -267,5 +404,16 @@
         private Button btnLimpiar;
         private Button btnEliminar;
         private DataGridView dgvPagos;
+        private Panel pnlDatosBancarios;
+        private Label lblBeneficiario;
+        private Label lblCuenta;
+        private Label lblBanco;
+        private Label lblDocumento;
+        private Label label1;
+        private Button btnCerrarPanel;
+        private Microsoft.Data.SqlClient.SqlCommandBuilder sqlCommandBuilder1;
+        private Label label4;
+        private Label label3;
+        private Label label2;
     }
 }

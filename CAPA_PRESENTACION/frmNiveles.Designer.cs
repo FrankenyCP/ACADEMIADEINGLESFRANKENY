@@ -102,6 +102,7 @@
             txtDuracion.Name = "txtDuracion";
             txtDuracion.Size = new Size(207, 27);
             txtDuracion.TabIndex = 5;
+            txtDuracion.KeyPress += txtDuracion_KeyPress;
             // 
             // txtCosto
             // 
@@ -109,17 +110,17 @@
             txtCosto.Name = "txtCosto";
             txtCosto.Size = new Size(207, 27);
             txtCosto.TabIndex = 6;
+            txtCosto.KeyPress += txtCosto_KeyPress;
             // 
             // lblMensaje
             // 
             lblMensaje.AutoSize = true;
             lblMensaje.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblMensaje.ForeColor = Color.Red;
-            lblMensaje.Location = new Point(152, 477);
+            lblMensaje.Location = new Point(62, 610);
             lblMensaje.Name = "lblMensaje";
-            lblMensaje.Size = new Size(28, 28);
+            lblMensaje.Size = new Size(0, 28);
             lblMensaje.TabIndex = 7;
-            lblMensaje.Text = "\"\"";
             // 
             // btnGuardar
             // 
@@ -188,11 +189,13 @@
             dgvNiveles.BorderStyle = BorderStyle.None;
             dgvNiveles.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvNiveles.Location = new Point(443, 300);
+            dgvNiveles.MultiSelect = false;
             dgvNiveles.Name = "dgvNiveles";
-            dgvNiveles.RowHeadersVisible = false;
-            dgvNiveles.RowHeadersWidth = 51;
+            dgvNiveles.RowHeadersWidth = 30;
+            dgvNiveles.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvNiveles.Size = new Size(684, 424);
             dgvNiveles.TabIndex = 12;
+            dgvNiveles.SelectionChanged += dgvNiveles_SelectionChanged;
             // 
             // frmNiveles
             // 
@@ -218,6 +221,7 @@
             Name = "frmNiveles";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Gestión de Niveles";
+            Load += frmNiveles_Load;
             ((System.ComponentModel.ISupportInitialize)dgvNiveles).EndInit();
             ResumeLayout(false);
             PerformLayout();

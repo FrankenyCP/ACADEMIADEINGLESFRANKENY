@@ -146,11 +146,10 @@
             // 
             lblMensaje.AutoSize = true;
             lblMensaje.ForeColor = Color.Red;
-            lblMensaje.Location = new Point(152, 654);
+            lblMensaje.Location = new Point(116, 645);
             lblMensaje.Name = "lblMensaje";
-            lblMensaje.Size = new Size(21, 20);
+            lblMensaje.Size = new Size(0, 20);
             lblMensaje.TabIndex = 9;
-            lblMensaje.Text = "\"\"";
             // 
             // btnGuardar
             // 
@@ -204,10 +203,11 @@
             dgvMatriculas.BorderStyle = BorderStyle.None;
             dgvMatriculas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvMatriculas.Location = new Point(430, 243);
+            dgvMatriculas.MultiSelect = false;
             dgvMatriculas.Name = "dgvMatriculas";
-            dgvMatriculas.RowHeadersVisible = false;
-            dgvMatriculas.RowHeadersWidth = 51;
-            dgvMatriculas.Size = new Size(670, 431);
+            dgvMatriculas.RowHeadersWidth = 30;
+            dgvMatriculas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvMatriculas.Size = new Size(1122, 431);
             dgvMatriculas.TabIndex = 13;
             dgvMatriculas.CellClick += dgvMatriculas_CellClick;
             // 
@@ -216,7 +216,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
-            ClientSize = new Size(1182, 753);
+            ClientSize = new Size(1582, 753);
             Controls.Add(dgvMatriculas);
             Controls.Add(btnEliminar);
             Controls.Add(btnLimpiar);

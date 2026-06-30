@@ -108,7 +108,7 @@
             txtNombre.Name = "txtNombre";
             txtNombre.Size = new Size(179, 27);
             txtNombre.TabIndex = 5;
-            txtNombre.TextChanged += textBox1_TextChanged;
+            txtNombre.KeyPress += txtNombre_KeyPress;
             // 
             // txtApellido
             // 
@@ -116,6 +116,7 @@
             txtApellido.Name = "txtApellido";
             txtApellido.Size = new Size(179, 27);
             txtApellido.TabIndex = 6;
+            txtApellido.KeyPress += txtApellido_KeyPress;
             // 
             // txtEspecialidad
             // 
@@ -127,6 +128,7 @@
             // txtTelefono
             // 
             txtTelefono.Location = new Point(47, 573);
+            txtTelefono.MaxLength = 10;
             txtTelefono.Name = "txtTelefono";
             txtTelefono.Size = new Size(179, 27);
             txtTelefono.TabIndex = 8;
@@ -136,11 +138,10 @@
             // 
             lblMensaje.AutoSize = true;
             lblMensaje.ForeColor = Color.Red;
-            lblMensaje.Location = new Point(115, 657);
+            lblMensaje.Location = new Point(82, 656);
             lblMensaje.Name = "lblMensaje";
-            lblMensaje.Size = new Size(21, 20);
+            lblMensaje.Size = new Size(0, 20);
             lblMensaje.TabIndex = 9;
-            lblMensaje.Text = "\"\"";
             // 
             // btnGuardar
             // 
@@ -208,11 +209,12 @@
             dgvInstructores.BackgroundColor = Color.FromArgb(27, 42, 74);
             dgvInstructores.BorderStyle = BorderStyle.None;
             dgvInstructores.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvInstructores.Location = new Point(478, 345);
+            dgvInstructores.Location = new Point(395, 344);
+            dgvInstructores.MultiSelect = false;
             dgvInstructores.Name = "dgvInstructores";
-            dgvInstructores.RowHeadersVisible = false;
-            dgvInstructores.RowHeadersWidth = 51;
-            dgvInstructores.Size = new Size(647, 360);
+            dgvInstructores.RowHeadersWidth = 30;
+            dgvInstructores.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvInstructores.Size = new Size(1075, 360);
             dgvInstructores.TabIndex = 14;
             dgvInstructores.CellClick += dgvInstructores_CellClick;
             // 
@@ -221,7 +223,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
-            ClientSize = new Size(1182, 753);
+            ClientSize = new Size(1482, 753);
             Controls.Add(dgvInstructores);
             Controls.Add(btnEliminar);
             Controls.Add(btnLimpiar);

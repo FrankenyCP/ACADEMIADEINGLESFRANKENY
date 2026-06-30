@@ -114,6 +114,7 @@
             txtNombre.Name = "txtNombre";
             txtNombre.Size = new Size(257, 27);
             txtNombre.TabIndex = 5;
+            txtNombre.KeyPress += txtNombre_KeyPress;
             // 
             // txtApellido
             // 
@@ -122,11 +123,13 @@
             txtApellido.Name = "txtApellido";
             txtApellido.Size = new Size(257, 27);
             txtApellido.TabIndex = 6;
+            txtApellido.KeyPress += txtApellido_KeyPress;
             // 
             // txtTelefono
             // 
             txtTelefono.BorderStyle = BorderStyle.FixedSingle;
             txtTelefono.Location = new Point(84, 390);
+            txtTelefono.MaxLength = 10;
             txtTelefono.Name = "txtTelefono";
             txtTelefono.Size = new Size(257, 27);
             txtTelefono.TabIndex = 7;
@@ -238,12 +241,13 @@
             dgvAlumnos.BorderStyle = BorderStyle.None;
             dgvAlumnos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvAlumnos.Location = new Point(403, 364);
+            dgvAlumnos.MultiSelect = false;
             dgvAlumnos.Name = "dgvAlumnos";
-            dgvAlumnos.RowHeadersVisible = false;
-            dgvAlumnos.RowHeadersWidth = 51;
-            dgvAlumnos.Size = new Size(743, 368);
+            dgvAlumnos.RowHeadersWidth = 30;
+            dgvAlumnos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvAlumnos.Size = new Size(1151, 368);
             dgvAlumnos.TabIndex = 16;
-            dgvAlumnos.CellContentClick += dgvAlumnos_CellClick;
+            dgvAlumnos.SelectionChanged += dgvAlumnos_SelectionChanged;
             // 
             // btnPromover
             // 
@@ -279,11 +283,10 @@
             // 
             lblMensaje.AutoSize = true;
             lblMensaje.ForeColor = Color.Red;
-            lblMensaje.Location = new Point(134, 687);
+            lblMensaje.Location = new Point(113, 687);
             lblMensaje.Name = "lblMensaje";
-            lblMensaje.Size = new Size(21, 20);
+            lblMensaje.Size = new Size(0, 20);
             lblMensaje.TabIndex = 19;
-            lblMensaje.Text = "\"\"";
             lblMensaje.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // frmAlumnos
@@ -291,7 +294,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
-            ClientSize = new Size(1182, 753);
+            ClientSize = new Size(1582, 753);
             Controls.Add(lblMensaje);
             Controls.Add(btnActualizar);
             Controls.Add(btnPromover);

@@ -52,7 +52,7 @@ namespace CAPA_PRESENTACION
                 "Total de Niveles:       " + totalNiveles + "\r\n" +
                 "Total de Instructores:  " + totalInstructores + "\r\n" +
                 "Total de Matrículas:    " + totalMatriculas + "\r\n" +
-                "Total Recaudado:        " + totalRecaudado.ToString("C") + "\r\n\r\n" +
+                "Total Recaudado:        RD$" + totalRecaudado.ToString("N2") + "\r\n\r\n" +
                 ciclo.ObtenerResumen() + "\r\n" +
                 "Ciclo activo: " + (ciclo.EstaActivo() ? "Sí" : "No");
         }

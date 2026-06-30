@@ -165,13 +165,13 @@ namespace CAPA_PRESENTACION
             LimpiarCampos();
         }
 
-        private void dgvNiveles_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvNiveles_SelectionChanged(object sender, EventArgs e)
         {
             try
             {
-                if (e.RowIndex >= 0)
+                if (dgvNiveles.CurrentRow != null)
                 {
-                    DataGridViewRow fila = dgvNiveles.Rows[e.RowIndex];
+                    DataGridViewRow fila = dgvNiveles.CurrentRow;
                     idSeleccionado = Convert.ToInt32(fila.Cells["IdNivel"].Value);
                     txtNombreNivel.Text = fila.Cells["NombreNivel"].Value.ToString();
                     txtDuracion.Text = fila.Cells["DuracionMeses"].Value.ToString();
@@ -183,6 +183,18 @@ namespace CAPA_PRESENTACION
                 MessageBox.Show("Error: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void txtDuracion_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private void txtCosto_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != '.' && !char.IsControl(e.KeyChar))
+                e.Handled = true;
         }
     }
 }

@@ -207,9 +207,20 @@ namespace CAPA_PRESENTACION
                 e.Handled = true;
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
         {
-
+            if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ' && !char.IsControl(e.KeyChar))
+                e.Handled = true;
         }
+
+        private void txtApellido_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ' && !char.IsControl(e.KeyChar))
+                e.Handled = true;
+        }
+
+        
     }
+
+
 }

@@ -48,7 +48,15 @@ namespace CAPA_PRESENTACION
 
         private void CargarGrilla()
         {
-            dgvPagos.DataSource = pagoCD.ObtenerTodos();
+            if (cmbMatricula.SelectedValue != null && cmbMatricula.SelectedValue is int)
+            {
+                int idMatricula = Convert.ToInt32(cmbMatricula.SelectedValue);
+                dgvPagos.DataSource = pagoCD.ObtenerPorMatricula(idMatricula);
+            }
+            else
+            {
+                dgvPagos.DataSource = pagoCD.ObtenerTodos();
+            }
         }
 
         private void LimpiarCampos()
@@ -86,22 +94,25 @@ namespace CAPA_PRESENTACION
 
         private void ActualizarSaldo()
         {
-            if (cmbMatricula.SelectedValue == null) return;
+            if (cmbMatricula.SelectedValue == null || !(cmbMatricula.SelectedValue is int)) return;
 
             int idMatricula = Convert.ToInt32(cmbMatricula.SelectedValue);
             decimal totalPagado = pagoCD.ObtenerTotalPagado(idMatricula);
             decimal costoNivel = ObtenerCostoNivel(idMatricula);
             decimal saldoRestante = costoNivel - totalPagado;
 
-            lblSaldo.Text = "Pagado: " + totalPagado.ToString("C") +
-                            " | Saldo restante: " + saldoRestante.ToString("C");
+            lblSaldo.Text = "Pagado: RD$" + totalPagado.ToString("N2") +
+                            " | Saldo restante: RD$" + saldoRestante.ToString("N2");
+
+            dgvPagos.DataSource = pagoCD.ObtenerPorMatricula(idMatricula);
         }
 
         private void cmbMatricula_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
             {
-                ActualizarSaldo();
+                if (cmbMatricula.SelectedValue != null && cmbMatricula.SelectedValue is int)
+                    ActualizarSaldo();
             }
             catch (Exception ex)
             {
@@ -191,13 +202,13 @@ namespace CAPA_PRESENTACION
             LimpiarCampos();
         }
 
-        private void dgvPagos_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvPagos_SelectionChanged(object sender, EventArgs e)
         {
             try
             {
-                if (e.RowIndex >= 0)
+                if (dgvPagos.CurrentRow != null)
                 {
-                    DataGridViewRow fila = dgvPagos.Rows[e.RowIndex];
+                    DataGridViewRow fila = dgvPagos.CurrentRow;
                     idSeleccionado = Convert.ToInt32(fila.Cells["IdPago"].Value);
                 }
             }
@@ -206,6 +217,26 @@ namespace CAPA_PRESENTACION
                 MessageBox.Show("Error: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void txtMonto_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != '.' && !char.IsControl(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private void cmbMetodoPago_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbMetodoPago.SelectedItem != null &&
+                cmbMetodoPago.SelectedItem.ToString() == "Transferencia")
+                pnlDatosBancarios.Visible = true;
+            else
+                pnlDatosBancarios.Visible = false;
+        }
+
+        private void btnCerrarPanel_Click(object sender, EventArgs e)
+        {
+            pnlDatosBancarios.Visible = false;
         }
     }
 }

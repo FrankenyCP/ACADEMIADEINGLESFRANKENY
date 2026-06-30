@@ -85,6 +85,38 @@ public class PagoCD
         return lista;
     }
 
+    public List<_Pago> ObtenerPorMatricula(int idMatricula)
+    {
+        var lista = new List<_Pago>();
+        using (var con = Conexion.ObtenerConexion())
+        using (var cmd = new SqlCommand(
+            @"SELECT P.IDPAGO, P.IDMATRICULA, P.FECHAPAGO, P.MONTO, P.METODOPAGO,
+                 A.Nombre + ' ' + A.APELLIDO + ' - ' + N.NOMBRENIVEL AS InfoMatricula
+          FROM PAGOS P
+          INNER JOIN MATRICULAS M ON P.IDMATRICULA = M.IDMATRICULA
+          INNER JOIN ALUMNOS A ON M.IDALUMNO = A.IDALUMNO
+          INNER JOIN NIVELES N ON M.IDNIVEL = N.IDNIVEL
+          WHERE P.IDMATRICULA = @id", con))
+        {
+            cmd.Parameters.AddWithValue("@id", idMatricula);
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    _Pago p = new _Pago();
+                    p.IdPago = reader.GetInt32(0);
+                    p.IdMatricula = reader.GetInt32(1);
+                    p.FechaPago = reader.GetDateTime(2);
+                    p.Monto = reader.GetDecimal(3);
+                    p.MetodoPago = reader.GetString(4);
+                    p.InfoMatricula = reader.GetString(5);
+                    lista.Add(p);
+                }
+            }
+        }
+        return lista;
+    }
+
     public bool Eliminar(int idPago)
     {
         using (var con = Conexion.ObtenerConexion())

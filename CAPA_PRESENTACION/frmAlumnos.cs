@@ -220,9 +220,68 @@ namespace CAPA_PRESENTACION
 
                 string nivelActual = matriculaCD.ObtenerNivelAlumno(idSeleccionado);
                 Alumno alumnoNeg = new Alumno();
-                string mensaje = alumnoNeg.PromoverAlumno(nivelActual);
-                MessageBox.Show(mensaje, "Promoción de Alumno",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                string siguienteNivel = alumnoNeg.PromoverAlumno(nivelActual);
+
+                if (siguienteNivel == "Completado")
+                {
+                    MessageBox.Show("El alumno ha completado todos los niveles. ¡Felicitaciones!",
+                                    "Promoción", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (siguienteNivel == "Nivel no reconocido.")
+                {
+                    MessageBox.Show(siguienteNivel, "Aviso",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                NivelCD nivelCD = new NivelCD();
+                List<_Nivel> niveles = nivelCD.ObtenerTodos();
+                int idNivelNuevo = 0;
+                for (int i = 0; i < niveles.Count; i++)
+                {
+                    if (niveles[i].NombreNivel == siguienteNivel)
+                    {
+                        idNivelNuevo = niveles[i].IdNivel;
+                        break;
+                    }
+                }
+
+                if (idNivelNuevo == 0)
+                {
+                    MessageBox.Show("No se encontró el nivel siguiente en la base de datos.",
+                                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                List<_Matricula> matriculas = matriculaCD.ObtenerTodos();
+                int idInstructorActual = 0;
+                for (int i = 0; i < matriculas.Count; i++)
+                {
+                    if (matriculas[i].IdAlumno == idSeleccionado)
+                    {
+                        idInstructorActual = matriculas[i].IdInstructor;
+                    }
+                }
+
+                _Matricula nuevaMatricula = new _Matricula();
+                nuevaMatricula.IdAlumno = idSeleccionado;
+                nuevaMatricula.IdNivel = idNivelNuevo;
+                nuevaMatricula.IdInstructor = idInstructorActual;
+                nuevaMatricula.FechaMatricula = DateTime.Today;
+
+                bool resultado = matriculaCD.Insertar(nuevaMatricula);
+                if (resultado)
+                {
+                    MessageBox.Show("Alumno promovido a " + siguienteNivel + " correctamente.",
+                                    "Promoción exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Error al promover al alumno.", "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -231,13 +290,13 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        private void dgvAlumnos_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvAlumnos_SelectionChanged(object sender, EventArgs e)
         {
             try
             {
-                if (e.RowIndex >= 0)
+                if (dgvAlumnos.SelectedRows.Count > 0)
                 {
-                    DataGridViewRow fila = dgvAlumnos.Rows[e.RowIndex];
+                    DataGridViewRow fila = dgvAlumnos.SelectedRows[0];
                     idSeleccionado = Convert.ToInt32(fila.Cells["IdAlumno"].Value);
                     txtNombre.Text = fila.Cells["Nombre"].Value.ToString();
                     txtApellido.Text = fila.Cells["Apellido"].Value.ToString();
@@ -256,6 +315,18 @@ namespace CAPA_PRESENTACION
         private void txtTelefono_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ' && !char.IsControl(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private void txtApellido_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ' && !char.IsControl(e.KeyChar))
                 e.Handled = true;
         }
     }
