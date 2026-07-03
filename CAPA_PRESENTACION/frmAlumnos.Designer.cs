@@ -48,6 +48,8 @@
             btnPromover = new Button();
             btnActualizar = new Button();
             lblMensaje = new Label();
+            sqlCommandBuilder1 = new Microsoft.Data.SqlClient.SqlCommandBuilder();
+            btnInfoAlumno = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvAlumnos).BeginInit();
             SuspendLayout();
             // 
@@ -289,12 +291,28 @@
             lblMensaje.TabIndex = 19;
             lblMensaje.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // btnInfoAlumno
+            // 
+            btnInfoAlumno.BackColor = Color.CadetBlue;
+            btnInfoAlumno.Cursor = Cursors.Hand;
+            btnInfoAlumno.FlatStyle = FlatStyle.Flat;
+            btnInfoAlumno.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnInfoAlumno.ForeColor = Color.White;
+            btnInfoAlumno.Location = new Point(807, 84);
+            btnInfoAlumno.Name = "btnInfoAlumno";
+            btnInfoAlumno.Size = new Size(219, 53);
+            btnInfoAlumno.TabIndex = 20;
+            btnInfoAlumno.Text = "Ver Información";
+            btnInfoAlumno.UseVisualStyleBackColor = false;
+            btnInfoAlumno.Click += btnInfoAlumno_Click;
+            // 
             // frmAlumnos
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
             ClientSize = new Size(1582, 753);
+            Controls.Add(btnInfoAlumno);
             Controls.Add(lblMensaje);
             Controls.Add(btnActualizar);
             Controls.Add(btnPromover);
@@ -348,5 +366,7 @@
         private Button btnPromover;
         private Button btnActualizar;
         private Label lblMensaje;
+        private Microsoft.Data.SqlClient.SqlCommandBuilder sqlCommandBuilder1;
+        private Button btnInfoAlumno;
     }
 }

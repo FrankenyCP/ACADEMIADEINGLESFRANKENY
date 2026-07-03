@@ -148,6 +148,12 @@ namespace CAPA_PRESENTACION
                 {
                     MessageBox.Show("Pago registrado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    Alumno alumnoEval = new Alumno();
+                    decimal totalPagadoActual = pagoCD.ObtenerTotalPagado(idMatricula);
+                    string evaluacion = alumnoNeg.EvaluarAprobacion(totalPagadoActual, costoNivel);
+                    MessageBox.Show(evaluacion, "Estado de Pago",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     ActualizarSaldo();
                     LimpiarCampos();

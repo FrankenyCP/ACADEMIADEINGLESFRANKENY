@@ -27,8 +27,8 @@ public class _Alumno
         this.fechaNacimiento = DateTime.Today;
     }
 
-    public _Alumno(int idAlumno, string nombre, string apellido,
-                   DateTime fechaNacimiento, string telefono, string correo)
+    public _Alumno(int idAlumno, string nombre, string apellido, DateTime fechaNacimiento, string telefono, string correo)
+                  
     {
         this.idAlumno = idAlumno;
         this.nombre = nombre;

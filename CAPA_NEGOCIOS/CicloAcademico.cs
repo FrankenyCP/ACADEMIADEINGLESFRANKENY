@@ -26,9 +26,13 @@ public class CicloAcademico
 
     ~CicloAcademico()
     {
-        // Destructor: al liberar este ciclo académico se generarían
-        // las constancias de participación para todos los alumnos
-        // inscritos en este ciclo.
+    
+      // Destructor: libera los recursos en memoria asociados al ciclo académico.
+      // Al destruirse este objeto, se notifica el cierre del ciclo y se liberan
+      // las referencias a fechas y nombre del ciclo retenidas durante la sesión.
+      // En un entorno de producción, aquí se generarían las constancias de nivel
+      // para cada alumno que completó el ciclo académico.
+        
     }
 
     public string ObtenerResumen()

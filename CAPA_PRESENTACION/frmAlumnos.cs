@@ -330,5 +330,32 @@ namespace CAPA_PRESENTACION
             if (!char.IsLetter(e.KeyChar) && e.KeyChar != ' ' && !char.IsControl(e.KeyChar))
                 e.Handled = true;
         }
+
+        private void btnInfoAlumno_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (idSeleccionado == 0)
+                {
+                    MessageBox.Show("Seleccione un alumno de la grilla.",
+                                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Polimorfismo: referencia de tipo base Persona apunta a objeto Alumno
+                Persona persona = new Alumno(
+                    txtNombre.Text, txtApellido.Text, txtTelefono.Text,
+                    dtpFechaNacimiento.Value, chkIntensivo.Checked);
+
+                // Invoca ObtenerInformacion() del tipo real (Alumno), no de Persona
+                MessageBox.Show(persona.ObtenerInformacion(), "Información del Alumno",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
