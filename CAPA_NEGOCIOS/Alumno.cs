@@ -75,8 +75,8 @@ public class Alumno : Persona
     public string PromoverAlumno(string nivelActual)
     {
         if (nivelActual == "Básico")
-            return "Medio";
-        else if (nivelActual == "Medio")
+            return "Intermedio";
+        else if (nivelActual == "Intermedio")
             return "Avanzado";
         else if (nivelActual == "Avanzado")
             return "Completado";

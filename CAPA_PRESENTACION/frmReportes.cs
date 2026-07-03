@@ -47,7 +47,7 @@ namespace CAPA_PRESENTACION
                 "Ciclo 2026-I", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31));
 
             txtReporte.Text =
-                "======== REPORTE GENERAL ========\r\n\r\n" +
+                " REPORTE GENERAL \r\n\r\n" +
                 "Total de Alumnos:       " + totalAlumnos + "\r\n" +
                 "Total de Niveles:       " + totalNiveles + "\r\n" +
                 "Total de Instructores:  " + totalInstructores + "\r\n" +

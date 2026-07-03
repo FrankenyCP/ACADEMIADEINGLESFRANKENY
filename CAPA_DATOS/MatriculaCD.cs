@@ -138,4 +138,20 @@ public class MatriculaCD
                 return "Sin nivel asignado";
         }
     }
+
+    public bool ActualizarNivel(int idMatricula, int idNivelNuevo)
+    {
+        using (var con = Conexion.ObtenerConexion())
+        using (var cmd = new SqlCommand(
+            "UPDATE MATRICULAS SET IDNIVEL=@nivel WHERE IDMATRICULA=@id", con))
+        {
+            cmd.Parameters.AddWithValue("@nivel", idNivelNuevo);
+            cmd.Parameters.AddWithValue("@id", idMatricula);
+            int filas = cmd.ExecuteNonQuery();
+            if (filas > 0)
+                return true;
+            else
+                return false;
+        }
+    }
 }

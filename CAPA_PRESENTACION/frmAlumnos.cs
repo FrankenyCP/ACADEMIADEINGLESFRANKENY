@@ -256,22 +256,23 @@ namespace CAPA_PRESENTACION
                 }
 
                 List<_Matricula> matriculas = matriculaCD.ObtenerTodos();
-                int idInstructorActual = 0;
+                int idMatriculaActual = 0;
                 for (int i = 0; i < matriculas.Count; i++)
                 {
                     if (matriculas[i].IdAlumno == idSeleccionado)
                     {
-                        idInstructorActual = matriculas[i].IdInstructor;
+                        idMatriculaActual = matriculas[i].IdMatricula;
                     }
                 }
 
-                _Matricula nuevaMatricula = new _Matricula();
-                nuevaMatricula.IdAlumno = idSeleccionado;
-                nuevaMatricula.IdNivel = idNivelNuevo;
-                nuevaMatricula.IdInstructor = idInstructorActual;
-                nuevaMatricula.FechaMatricula = DateTime.Today;
+                if (idMatriculaActual == 0)
+                {
+                    MessageBox.Show("No se encontró matrícula activa para este alumno.",
+                                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-                bool resultado = matriculaCD.Insertar(nuevaMatricula);
+                bool resultado = matriculaCD.ActualizarNivel(idMatriculaActual, idNivelNuevo);
                 if (resultado)
                 {
                     MessageBox.Show("Alumno promovido a " + siguienteNivel + " correctamente.",

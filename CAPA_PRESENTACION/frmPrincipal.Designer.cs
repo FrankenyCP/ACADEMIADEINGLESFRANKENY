@@ -169,6 +169,7 @@
             Name = "frmPrincipal";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Academia de Inglés";
+            Load += frmPrincipal_Load;
             ResumeLayout(false);
             PerformLayout();
         }
