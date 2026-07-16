@@ -2,6 +2,8 @@
 
 namespace CAPA_DATOS;
 
+//TODO Encapsulacion
+
 public class _Alumno
 {
     private int idAlumno;
