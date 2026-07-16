@@ -35,7 +35,7 @@ public class Alumno : Persona
 
     ~Alumno()
     {
-        // Destructor: libera los recursos del objeto Alumno en memoria.
+        // TODO estructor: libera los recursos del objeto Alumno en memoria.
         // Aquí se limpiarían listas internas vinculadas a este alumno.
     }
 
