@@ -369,4 +369,5 @@
         private Microsoft.Data.SqlClient.SqlCommandBuilder sqlCommandBuilder1;
         private Button btnInfoAlumno;
     }
+    // dariel11
 }
