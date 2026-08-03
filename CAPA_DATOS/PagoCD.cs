@@ -1,4 +1,4 @@
-ï»¿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace CAPA_DATOS;
 
@@ -157,4 +157,24 @@ public class PagoCD
                 return false;
         }
     }
+
+    // TODO Actualizar: se agrega el método Actualizar para completar el CRUD de pagos.
+    // Antes solo existían Insertar, Eliminar y las lecturas; faltaba el Update.
+    public bool Actualizar(_Pago p)
+    {
+        using (var con = Conexion.ObtenerConexion())
+        using (var cmd = new SqlCommand(
+            @"UPDATE PAGOS SET FECHAPAGO=@fecha, MONTO=@monto, METODOPAGO=@metodo
+          WHERE IDPAGO=@id", con))
+        {
+            cmd.Parameters.AddWithValue("@fecha", p.FechaPago);
+            cmd.Parameters.AddWithValue("@monto", p.Monto);
+            cmd.Parameters.AddWithValue("@metodo", p.MetodoPago);
+            cmd.Parameters.AddWithValue("@id", p.IdPago);
+
+            int filas = cmd.ExecuteNonQuery();
+            return filas > 0;
+        }
+    }
+
 }
