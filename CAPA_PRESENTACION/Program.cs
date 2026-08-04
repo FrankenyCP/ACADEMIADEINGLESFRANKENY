@@ -12,6 +12,8 @@ namespace CAPA_PRESENTACION
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.Run(new frmLogin());
+            // TODO Integrante 5: configuración obligatoria de QuestPDF (licencia gratuita para uso académico/no comercial).
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         }
     }
 }
