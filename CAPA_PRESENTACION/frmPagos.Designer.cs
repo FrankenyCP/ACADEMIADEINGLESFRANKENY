@@ -54,6 +54,7 @@ namespace CAPA_PRESENTACION
             lblCuenta = new Label();
             lblBanco = new Label();
             sqlCommandBuilder1 = new Microsoft.Data.SqlClient.SqlCommandBuilder();
+            Exportar = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvPagos).BeginInit();
             pnlDatosBancarios.SuspendLayout();
             SuspendLayout();
@@ -245,7 +246,7 @@ namespace CAPA_PRESENTACION
             pnlDatosBancarios.Controls.Add(lblBeneficiario);
             pnlDatosBancarios.Controls.Add(lblCuenta);
             pnlDatosBancarios.Controls.Add(lblBanco);
-            pnlDatosBancarios.Location = new Point(146, 19);
+            pnlDatosBancarios.Location = new Point(209, 89);
             pnlDatosBancarios.Name = "pnlDatosBancarios";
             pnlDatosBancarios.Size = new Size(1028, 675);
             pnlDatosBancarios.TabIndex = 15;
@@ -353,6 +354,21 @@ namespace CAPA_PRESENTACION
             lblBanco.TabIndex = 0;
             lblBanco.Text = " Banco Popular Dominicano";
             // 
+            // Exportar
+            // 
+            Exportar.BackColor = Color.CadetBlue;
+            Exportar.Cursor = Cursors.Hand;
+            Exportar.FlatStyle = FlatStyle.Flat;
+            Exportar.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            Exportar.ForeColor = Color.White;
+            Exportar.Location = new Point(1097, 112);
+            Exportar.Name = "Exportar";
+            Exportar.Size = new Size(150, 57);
+            Exportar.TabIndex = 16;
+            Exportar.Text = "Exportar";
+            Exportar.UseVisualStyleBackColor = false;
+            Exportar.Click += button1_Click;
+            // 
             // frmPagos
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -375,6 +391,7 @@ namespace CAPA_PRESENTACION
             Controls.Add(lblFechaPago);
             Controls.Add(lblMatricula);
             Controls.Add(lblTitulo);
+            Controls.Add(Exportar);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "frmPagos";
             StartPosition = FormStartPosition.CenterScreen;
@@ -415,5 +432,6 @@ namespace CAPA_PRESENTACION
         private Label label4;
         private Label label3;
         private Label label2;
+        private Button Exportar;
     }
 }

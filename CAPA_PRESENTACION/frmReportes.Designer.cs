@@ -1,4 +1,4 @@
-﻿namespace CAPA_PRESENTACION
+namespace CAPA_PRESENTACION
 {
     partial class frmReportes
     {
@@ -31,6 +31,7 @@
             lblTitulo = new Label();
             txtReporte = new TextBox();
             btnActualizar = new Button();
+            button1 = new Button();
             SuspendLayout();
             // 
             // lblTitulo
@@ -64,7 +65,7 @@
             btnActualizar.FlatStyle = FlatStyle.Flat;
             btnActualizar.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnActualizar.ForeColor = Color.White;
-            btnActualizar.Location = new Point(468, 579);
+            btnActualizar.Location = new Point(262, 579);
             btnActualizar.Name = "btnActualizar";
             btnActualizar.Size = new Size(220, 76);
             btnActualizar.TabIndex = 2;
@@ -72,12 +73,27 @@
             btnActualizar.UseVisualStyleBackColor = false;
             btnActualizar.Click += btnActualizar_Click;
             // 
+            // button1
+            // 
+            button1.BackColor = Color.CadetBlue;
+            button1.Cursor = Cursors.Hand;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button1.ForeColor = Color.White;
+            button1.Location = new Point(693, 579);
+            button1.Name = "button1";
+            button1.Size = new Size(220, 76);
+            button1.TabIndex = 3;
+            button1.Text = "Exportar Reporte";
+            button1.UseVisualStyleBackColor = false;
+            // 
             // frmReportes
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
             ClientSize = new Size(1182, 753);
+            Controls.Add(button1);
             Controls.Add(btnActualizar);
             Controls.Add(txtReporte);
             Controls.Add(lblTitulo);
@@ -96,5 +112,6 @@
         private Label lblTitulo;
         private TextBox txtReporte;
         private Button btnActualizar;
+        private Button button1;
     }
 }

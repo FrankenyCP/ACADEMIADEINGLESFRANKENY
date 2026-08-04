@@ -1,4 +1,4 @@
-ï»¿using CAPA_DATOS;
+using CAPA_DATOS;
 using CAPA_NEGOCIOS;
 
 namespace CAPA_PRESENTACION
@@ -51,10 +51,10 @@ namespace CAPA_PRESENTACION
                 "Total de Alumnos:       " + totalAlumnos + "\r\n" +
                 "Total de Niveles:       " + totalNiveles + "\r\n" +
                 "Total de Instructores:  " + totalInstructores + "\r\n" +
-                "Total de MatrÃ­culas:    " + totalMatriculas + "\r\n" +
+                "Total de Matrículas:    " + totalMatriculas + "\r\n" +
                 "Total Recaudado:        RD$" + totalRecaudado.ToString("N2") + "\r\n\r\n" +
                 ciclo.ObtenerResumen() + "\r\n" +
-                "Ciclo activo: " + (ciclo.EstaActivo() ? "SÃ­" : "No");
+                "Ciclo activo: " + (ciclo.EstaActivo() ? "Sí" : "No");
         }
 
         private void btnActualizar_Click(object sender, EventArgs e)
