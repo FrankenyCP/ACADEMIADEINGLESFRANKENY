@@ -245,9 +245,103 @@ namespace CAPA_PRESENTACION
             pnlDatosBancarios.Visible = false;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void btnExportarPDF_Click(object sender, EventArgs e)
         {
+            try
+            {
+                _Pago pagoSeleccionado = dgvPagos.CurrentRow?.DataBoundItem as _Pago;
+                if (pagoSeleccionado == null)
+                {
+                    MessageBox.Show("Seleccione un pago de la grilla para exportar.",
+                                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
+                using (SaveFileDialog dialogo = new SaveFileDialog())
+                {
+                    dialogo.Filter = "Archivo PDF (*.pdf)|*.pdf";
+                    dialogo.FileName = "Pago_" + pagoSeleccionado.IdPago + ".pdf";
+
+                    if (dialogo.ShowDialog() != DialogResult.OK)
+                        return;
+
+                    string titulo = "Factura de Pago";
+                    List<string> contenido = new List<string>
+            {
+                "IdPago: " + pagoSeleccionado.IdPago,
+                "Matrícula: " + pagoSeleccionado.InfoMatricula,
+                "Fecha de Pago: " + pagoSeleccionado.FechaPago.ToString("dd/MM/yyyy"),
+                "Monto: RD$" + pagoSeleccionado.Monto.ToString("N2"),
+                "Método de Pago: " + pagoSeleccionado.MetodoPago
+            };
+
+                    iExportador exportador = new ExportadorPdf();
+                    bool exito = await exportador.ExportarAsync(titulo, contenido, dialogo.FileName);
+
+                    if (exito)
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(dialogo.FileName)
+                        {
+                            UseShellExecute = true
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al exportar a PDF: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void btn_ExportarExcelfrmPagos_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _Pago pagoSeleccionado = dgvPagos.CurrentRow?.DataBoundItem as _Pago;
+                if (pagoSeleccionado == null)
+                {
+                    MessageBox.Show("Seleccione un pago de la grilla para exportar.",
+                                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                using (SaveFileDialog dialogo = new SaveFileDialog())
+                {
+                    dialogo.Filter = "Archivo Excel (*.xlsx)|*.xlsx";
+                    dialogo.FileName = "Pago_" + pagoSeleccionado.IdPago + ".xlsx";
+
+                    if (dialogo.ShowDialog() != DialogResult.OK)
+                        return; // el usuario canceló
+
+                    string titulo = "Factura de Pago";
+                    List<string> contenido = new List<string>
+            {
+                "IdPago: " + pagoSeleccionado.IdPago,
+                "Matrícula: " + pagoSeleccionado.InfoMatricula,
+                "Fecha de Pago: " + pagoSeleccionado.FechaPago.ToString("dd/MM/yyyy"),
+                "Monto: RD$" + pagoSeleccionado.Monto.ToString("N2"),
+                "Método de Pago: " + pagoSeleccionado.MetodoPago
+            };
+
+                    iExportador exportador = new ExportadorExcel();
+                    bool exito = await exportador.ExportarAsync(titulo, contenido, dialogo.FileName);
+
+                    if (exito)
+                    {
+                        // TODO Integrante 5: abre el archivo generado con el programa predeterminado del sistema.
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(dialogo.FileName)
+                        {
+                            UseShellExecute = true
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al exportar a Excel: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

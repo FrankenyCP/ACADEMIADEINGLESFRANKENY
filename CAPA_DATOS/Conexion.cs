@@ -1,11 +1,11 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace CAPA_DATOS;
 
 public class Conexion
 {
     private static readonly string _cadena =
-        @"Server=.;Database=ACADEMIADEINGLESFRANKENY;" +
+        @"Server=(localdb)\MSSQLLocalDB;Database=ACADEMIADEINGLESFRANKENY;" +
         "Trusted_Connection=True;TrustServerCertificate=True;";
 
     public static SqlConnection ObtenerConexion()

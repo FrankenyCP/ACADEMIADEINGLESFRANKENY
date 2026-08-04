@@ -54,7 +54,8 @@ namespace CAPA_PRESENTACION
             lblCuenta = new Label();
             lblBanco = new Label();
             sqlCommandBuilder1 = new Microsoft.Data.SqlClient.SqlCommandBuilder();
-            Exportar = new Button();
+            btn_ExportarPDF = new Button();
+            btn_ExportarExcelfrmPagos = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvPagos).BeginInit();
             pnlDatosBancarios.SuspendLayout();
             SuspendLayout();
@@ -246,7 +247,7 @@ namespace CAPA_PRESENTACION
             pnlDatosBancarios.Controls.Add(lblBeneficiario);
             pnlDatosBancarios.Controls.Add(lblCuenta);
             pnlDatosBancarios.Controls.Add(lblBanco);
-            pnlDatosBancarios.Location = new Point(209, 89);
+            pnlDatosBancarios.Location = new Point(209, 76);
             pnlDatosBancarios.Name = "pnlDatosBancarios";
             pnlDatosBancarios.Size = new Size(1028, 675);
             pnlDatosBancarios.TabIndex = 15;
@@ -354,20 +355,35 @@ namespace CAPA_PRESENTACION
             lblBanco.TabIndex = 0;
             lblBanco.Text = " Banco Popular Dominicano";
             // 
-            // Exportar
+            // btn_ExportarPDF
             // 
-            Exportar.BackColor = Color.CadetBlue;
-            Exportar.Cursor = Cursors.Hand;
-            Exportar.FlatStyle = FlatStyle.Flat;
-            Exportar.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            Exportar.ForeColor = Color.White;
-            Exportar.Location = new Point(1097, 112);
-            Exportar.Name = "Exportar";
-            Exportar.Size = new Size(150, 57);
-            Exportar.TabIndex = 16;
-            Exportar.Text = "Exportar";
-            Exportar.UseVisualStyleBackColor = false;
-            Exportar.Click += button1_Click;
+            btn_ExportarPDF.BackColor = Color.CadetBlue;
+            btn_ExportarPDF.Cursor = Cursors.Hand;
+            btn_ExportarPDF.FlatStyle = FlatStyle.Flat;
+            btn_ExportarPDF.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btn_ExportarPDF.ForeColor = Color.White;
+            btn_ExportarPDF.Location = new Point(1097, 112);
+            btn_ExportarPDF.Name = "btn_ExportarPDF";
+            btn_ExportarPDF.Size = new Size(150, 57);
+            btn_ExportarPDF.TabIndex = 16;
+            btn_ExportarPDF.Text = "Exportar PDF";
+            btn_ExportarPDF.UseVisualStyleBackColor = false;
+            btn_ExportarPDF.Click += new System.EventHandler(this.btnExportarPDF_Click);
+            // 
+            // btn_ExportarExcelfrmPagos
+            // 
+            btn_ExportarExcelfrmPagos.BackColor = Color.CadetBlue;
+            btn_ExportarExcelfrmPagos.Cursor = Cursors.Hand;
+            btn_ExportarExcelfrmPagos.FlatStyle = FlatStyle.Flat;
+            btn_ExportarExcelfrmPagos.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btn_ExportarExcelfrmPagos.ForeColor = Color.White;
+            btn_ExportarExcelfrmPagos.Location = new Point(1277, 112);
+            btn_ExportarExcelfrmPagos.Name = "btn_ExportarExcelfrmPagos";
+            btn_ExportarExcelfrmPagos.Size = new Size(169, 57);
+            btn_ExportarExcelfrmPagos.TabIndex = 17;
+            btn_ExportarExcelfrmPagos.Text = "Exportar Excel";
+            btn_ExportarExcelfrmPagos.UseVisualStyleBackColor = false;
+            btn_ExportarExcelfrmPagos.Click += new System.EventHandler(this.btn_ExportarExcelfrmPagos_Click);
             // 
             // frmPagos
             // 
@@ -375,6 +391,7 @@ namespace CAPA_PRESENTACION
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
             ClientSize = new Size(1582, 753);
+            Controls.Add(btn_ExportarExcelfrmPagos);
             Controls.Add(pnlDatosBancarios);
             Controls.Add(dgvPagos);
             Controls.Add(btnEliminar);
@@ -391,7 +408,7 @@ namespace CAPA_PRESENTACION
             Controls.Add(lblFechaPago);
             Controls.Add(lblMatricula);
             Controls.Add(lblTitulo);
-            Controls.Add(Exportar);
+            Controls.Add(btn_ExportarPDF);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "frmPagos";
             StartPosition = FormStartPosition.CenterScreen;
@@ -432,6 +449,7 @@ namespace CAPA_PRESENTACION
         private Label label4;
         private Label label3;
         private Label label2;
-        private Button Exportar;
+        private Button btn_ExportarPDF;
+        private Button btn_ExportarExcelfrmPagos;
     }
 }
