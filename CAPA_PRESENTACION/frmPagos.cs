@@ -1,4 +1,4 @@
-ï»¿using CAPA_DATOS;
+using CAPA_DATOS;
 using CAPA_NEGOCIOS;
 
 namespace CAPA_PRESENTACION
@@ -146,7 +146,7 @@ namespace CAPA_PRESENTACION
                 bool resultado = alumnoNeg.RegistrarPago(p, costoNivel);
                 if (resultado)
                 {
-                    MessageBox.Show("Pago registrado correctamente.", "Ã‰xito",
+                    MessageBox.Show("Pago registrado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     Alumno alumnoEval = new Alumno();
@@ -185,7 +185,7 @@ namespace CAPA_PRESENTACION
                 bool resultado = pagoCD.Eliminar(idSeleccionado);
                 if (resultado)
                 {
-                    MessageBox.Show("Pago eliminado correctamente.", "Ã‰xito",
+                    MessageBox.Show("Pago eliminado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     LimpiarCampos();

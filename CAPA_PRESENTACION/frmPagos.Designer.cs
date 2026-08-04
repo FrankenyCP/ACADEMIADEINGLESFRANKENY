@@ -1,4 +1,4 @@
-ï»¿namespace CAPA_PRESENTACION
+namespace CAPA_PRESENTACION
 {
     partial class frmPagos
     {
@@ -67,7 +67,7 @@
             lblTitulo.Name = "lblTitulo";
             lblTitulo.Size = new Size(259, 41);
             lblTitulo.TabIndex = 0;
-            lblTitulo.Text = "GestiÃ³n de Pagos";
+            lblTitulo.Text = "Gestión de Pagos";
             lblTitulo.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // lblMatricula
@@ -79,7 +79,7 @@
             lblMatricula.Name = "lblMatricula";
             lblMatricula.Size = new Size(118, 28);
             lblMatricula.TabIndex = 1;
-            lblMatricula.Text = "MatrÃ­cula *";
+            lblMatricula.Text = "Matrícula *";
             // 
             // lblFechaPago
             // 
@@ -112,7 +112,7 @@
             lblMetodoPago.Name = "lblMetodoPago";
             lblMetodoPago.Size = new Size(183, 28);
             lblMetodoPago.TabIndex = 4;
-            lblMetodoPago.Text = "MÃ©todo de Pago *";
+            lblMetodoPago.Text = "Método de Pago *";
             // 
             // cmbMatricula
             // 
@@ -301,7 +301,7 @@
             btnCerrarPanel.FlatStyle = FlatStyle.Flat;
             btnCerrarPanel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnCerrarPanel.ForeColor = Color.White;
-            btnCerrarPanel.Location = new Point(986, 3);
+            btnCerrarPanel.Location = new Point(988, 0);
             btnCerrarPanel.Name = "btnCerrarPanel";
             btnCerrarPanel.Size = new Size(40, 40);
             btnCerrarPanel.TabIndex = 4;
@@ -340,7 +340,7 @@
             lblCuenta.Name = "lblCuenta";
             lblCuenta.Size = new Size(227, 31);
             lblCuenta.TabIndex = 1;
-            lblCuenta.Text = "NÃºmero de Cuenta: ";
+            lblCuenta.Text = "Número de Cuenta: ";
             // 
             // lblBanco
             // 
@@ -378,7 +378,7 @@
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "frmPagos";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "GestiÃ³n de Pagos";
+            Text = "Gestión de Pagos";
             Load += frmPagos_Load;
             ((System.ComponentModel.ISupportInitialize)dgvPagos).EndInit();
             pnlDatosBancarios.ResumeLayout(false);
