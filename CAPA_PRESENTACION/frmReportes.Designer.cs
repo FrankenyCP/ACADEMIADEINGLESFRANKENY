@@ -31,7 +31,7 @@ namespace CAPA_PRESENTACION
             lblTitulo = new Label();
             txtReporte = new TextBox();
             btnActualizar = new Button();
-            button1 = new Button();
+            btn_ExportarReportePDF = new Button();
             SuspendLayout();
             // 
             // lblTitulo
@@ -73,19 +73,20 @@ namespace CAPA_PRESENTACION
             btnActualizar.UseVisualStyleBackColor = false;
             btnActualizar.Click += btnActualizar_Click;
             // 
-            // button1
+            // btn_ExportarReportePDF
             // 
-            button1.BackColor = Color.CadetBlue;
-            button1.Cursor = Cursors.Hand;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button1.ForeColor = Color.White;
-            button1.Location = new Point(693, 579);
-            button1.Name = "button1";
-            button1.Size = new Size(220, 76);
-            button1.TabIndex = 3;
-            button1.Text = "Exportar Reporte";
-            button1.UseVisualStyleBackColor = false;
+            btn_ExportarReportePDF.BackColor = Color.CadetBlue;
+            btn_ExportarReportePDF.Cursor = Cursors.Hand;
+            btn_ExportarReportePDF.FlatStyle = FlatStyle.Flat;
+            btn_ExportarReportePDF.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btn_ExportarReportePDF.ForeColor = Color.White;
+            btn_ExportarReportePDF.Location = new Point(693, 579);
+            btn_ExportarReportePDF.Name = "btn_ExportarReportePDF";
+            btn_ExportarReportePDF.Size = new Size(220, 76);
+            btn_ExportarReportePDF.TabIndex = 3;
+            btn_ExportarReportePDF.Text = "Exportar Reporte";
+            btn_ExportarReportePDF.UseVisualStyleBackColor = false;
+            btn_ExportarReportePDF.Click += btn_ExportarReportePDF_Click;
             // 
             // frmReportes
             // 
@@ -93,7 +94,7 @@ namespace CAPA_PRESENTACION
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
             ClientSize = new Size(1182, 753);
-            Controls.Add(button1);
+            Controls.Add(btn_ExportarReportePDF);
             Controls.Add(btnActualizar);
             Controls.Add(txtReporte);
             Controls.Add(lblTitulo);
@@ -112,6 +113,6 @@ namespace CAPA_PRESENTACION
         private Label lblTitulo;
         private TextBox txtReporte;
         private Button btnActualizar;
-        private Button button1;
+        private Button btn_ExportarReportePDF;
     }
 }
