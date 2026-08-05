@@ -2,6 +2,8 @@
 
 namespace CAPA_DATOS;
 
+// TODO: Modelo que representa la tabla MATRICULAS en la base de datos
+// Contiene campos extra para mostrar información relacionada en la grilla
 public class _Matricula
 {
     private int idMatricula;
@@ -16,16 +18,18 @@ public class _Matricula
     public int IdInstructor { get => idInstructor; set => idInstructor = value; }
     public DateTime FechaMatricula { get => fechaMatricula; set => fechaMatricula = value; }
 
-    // Campos extra para mostrar en la grilla
+    // TODO: Campos extra para mostrar información relacionada en la grilla
     public string NombreAlumno { get; set; } = string.Empty;
     public string NombreNivel { get; set; } = string.Empty;
     public string NombreInstructor { get; set; } = string.Empty;
 
+    // TODO: Constructor vacío — inicializa la fecha con el día de hoy
     public _Matricula()
     {
         this.fechaMatricula = DateTime.Today;
     }
 
+    // TODO: Constructor parametrizado — inicializa todos los campos de la matrícula
     public _Matricula(int idMatricula, int idAlumno, int idNivel,
                       int idInstructor, DateTime fechaMatricula)
     {
@@ -37,8 +41,12 @@ public class _Matricula
     }
 }
 
+// TODO: DAL de Matrículas — maneja todas las operaciones SQL sobre la tabla MATRICULAS
+// Respeta la arquitectura en capas: solo accede a datos, sin lógica de negocio
 public class MatriculaCD
 {
+    // TODO: Inserta una nueva matrícula en la base de datos
+    // Retorna true si la inserción fue exitosa, false si falló
     public bool Insertar(_Matricula m)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -58,6 +66,27 @@ public class MatriculaCD
         }
     }
 
+    // TODO: Verifica si ya existe una matrícula activa para el alumno en el mismo nivel
+    // Evita registros duplicados — un alumno no puede estar dos veces en el mismo nivel
+    public bool ExisteMatriculaDuplicada(int idAlumno, int idNivel)
+    {
+        using (var con = Conexion.ObtenerConexion())
+        using (var cmd = new SqlCommand(
+            @"SELECT COUNT(*) FROM MATRICULAS 
+              WHERE IDALUMNO = @alumno AND IDNIVEL = @nivel", con))
+        {
+            cmd.Parameters.AddWithValue("@alumno", idAlumno);
+            cmd.Parameters.AddWithValue("@nivel", idNivel);
+            int count = (int)cmd.ExecuteScalar();
+            if (count > 0)
+                return true;
+            else
+                return false;
+        }
+    }
+
+    // TODO: Obtiene todas las matrículas con información de alumno, nivel e instructor
+    // Usa INNER JOIN para traer los nombres relacionados en una sola consulta
     public List<_Matricula> ObtenerTodos()
     {
         var lista = new List<_Matricula>();
@@ -90,6 +119,8 @@ public class MatriculaCD
         return lista;
     }
 
+    // TODO: Elimina una matrícula por su ID
+    // Solo se puede eliminar si no tiene pagos asociados (verificar antes de llamar)
     public bool Eliminar(int idMatricula)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -105,6 +136,8 @@ public class MatriculaCD
         }
     }
 
+    // TODO: Verifica si una matrícula tiene pagos registrados
+    // Se usa antes de eliminar para respetar la integridad referencial
     public bool TienePagos(int idMatricula)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -120,6 +153,8 @@ public class MatriculaCD
         }
     }
 
+    // TODO: Obtiene el nivel actual del alumno (el más reciente por ID de matrícula)
+    // Se usa en frmAlumnos para mostrar el nivel actual al seleccionar un alumno
     public string ObtenerNivelAlumno(int idAlumno)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -139,6 +174,8 @@ public class MatriculaCD
         }
     }
 
+    // TODO: Actualiza el nivel de una matrícula existente al promover un alumno
+    // Se llama desde frmAlumnos cuando el director presiona el botón Promover
     public bool ActualizarNivel(int idMatricula, int idNivelNuevo)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -152,6 +189,38 @@ public class MatriculaCD
                 return true;
             else
                 return false;
+        }
+    }
+
+    // TODO: Obtiene la matrícula activa de un alumno específico
+    // Se usa para verificar si el alumno ya tiene una matrícula antes de crear una nueva
+    public _Matricula ObtenerMatriculaActiva(int idAlumno)
+    {
+        using (var con = Conexion.ObtenerConexion())
+        using (var cmd = new SqlCommand(
+            @"SELECT TOP 1 IDMATRICULA, IDALUMNO, IDNIVEL, IDINSTRUCTOR, FECHAMATRICULA
+              FROM MATRICULAS
+              WHERE IDALUMNO = @id
+              ORDER BY IDMATRICULA DESC", con))
+        {
+            cmd.Parameters.AddWithValue("@id", idAlumno);
+            using (var reader = cmd.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    _Matricula m = new _Matricula();
+                    m.IdMatricula = reader.GetInt32(0);
+                    m.IdAlumno = reader.GetInt32(1);
+                    m.IdNivel = reader.GetInt32(2);
+                    m.IdInstructor = reader.GetInt32(3);
+                    m.FechaMatricula = reader.GetDateTime(4);
+                    return m;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
     }
 }
