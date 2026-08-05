@@ -2,9 +2,14 @@
 
 namespace CAPA_PRESENTACION
 {
+    //TODO: Formulario de Gestión de Niveles (Capa Presentación).
+    //TODO: Aquí solo va código de interfaz: leer/pintar controles y llamar a la Capa Datos.
     public partial class frmNiveles : Form
     {
+        //TODO: Instancia de la clase de acceso a datos de niveles.
         private NivelCD nivelCD = new NivelCD();
+
+        //TODO: Guarda el Id del nivel seleccionado en la grilla (0 = ninguno seleccionado).
         private int idSeleccionado = 0;
 
         public frmNiveles()
@@ -12,24 +17,43 @@ namespace CAPA_PRESENTACION
             InitializeComponent();
         }
 
-        private void frmNiveles_Load(object sender, EventArgs e)
+        //TODO: Evento que se dispara al abrir el formulario.
+        //TODO: Ahora es "async void" porque llama a la carga asíncrona (Requisito 7).
+        private async void frmNiveles_Load(object sender, EventArgs e)
+        {
+            await CargarDatosAsync();
+        }
+
+        //TODO: Método NUEVO. Carga la grilla de niveles y el total de registros
+        //TODO: EN PARALELO usando Task.WhenAll(...), tal como pide el Requisito 7,
+        //TODO: para que la interfaz no se congele mientras se consulta la base de datos.
+        private async Task CargarDatosAsync()
         {
             try
             {
-                CargarGrilla();
+                Cursor = Cursors.WaitCursor; //TODO: Cambia el cursor mientras carga (feedback visual).
+
+                Task<List<_Nivel>> tareaLista = nivelCD.ObtenerTodosAsync();
+                Task<int> tareaTotal = nivelCD.ContarNivelesAsync();
+
+                //TODO: Aquí ocurre la magia del Requisito 7: ambas tareas corren a la vez.
+                await Task.WhenAll(tareaLista, tareaTotal);
+
+                dgvNiveles.DataSource = tareaLista.Result;
+                lblTotal.Text = "Total de niveles: " + tareaTotal.Result;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error al cargar niveles: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                Cursor = Cursors.Default; //TODO: Vuelve el cursor a la normalidad, pase lo que pase.
+            }
         }
 
-        private void CargarGrilla()
-        {
-            dgvNiveles.DataSource = nivelCD.ObtenerTodos();
-        }
-
+        //TODO: Limpia todos los cuadros de texto y el mensaje de validación.
         private void LimpiarCampos()
         {
             txtNombreNivel.Text = string.Empty;
@@ -39,40 +63,76 @@ namespace CAPA_PRESENTACION
             idSeleccionado = 0;
         }
 
-        private bool ValidarCampos()
+        //TODO: Validaciones (Requisito 3): campos vacíos/espacios en blanco,
+        //TODO: duración > 0 y costo > 0. Usa "out" para devolver ya convertidos
+        //TODO: los valores numéricos y no tener que volver a parsear después.
+        private bool ValidarCampos(out int duracion, out decimal costo)
         {
-            if (txtNombreNivel.Text.Trim() == string.Empty ||
-                txtDuracion.Text.Trim() == string.Empty ||
-                txtCosto.Text.Trim() == string.Empty)
+            duracion = 0;
+            costo = 0;
+
+            if (string.IsNullOrWhiteSpace(txtNombreNivel.Text) ||
+                string.IsNullOrWhiteSpace(txtDuracion.Text) ||
+                string.IsNullOrWhiteSpace(txtCosto.Text))
             {
                 lblMensaje.ForeColor = Color.Red;
                 lblMensaje.Text = "Todos los campos con * son obligatorios.";
                 return false;
             }
-            else
+
+            //TODO: TryParse evita que la app truene con FormatException si escriben letras.
+            if (!int.TryParse(txtDuracion.Text.Trim(), out duracion) || duracion <= 0)
             {
-                lblMensaje.Text = string.Empty;
-                return true;
+                lblMensaje.ForeColor = Color.Red;
+                lblMensaje.Text = "La duración debe ser un número mayor que cero.";
+                return false;
             }
+
+            if (!decimal.TryParse(txtCosto.Text.Trim(), out costo) || costo <= 0)
+            {
+                lblMensaje.ForeColor = Color.Red;
+                lblMensaje.Text = "El costo debe ser un número mayor que cero.";
+                return false;
+            }
+
+            lblMensaje.Text = string.Empty;
+            return true;
         }
 
-        private void btnGuardar_Click(object sender, EventArgs e)
+        //TODO: Botón GUARDAR (Insertar). Ahora es async y valida duplicados antes de insertar.
+        private async void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                if (!ValidarCampos()) return;
+                if (!ValidarCampos(out int duracion, out decimal costo)) return;
+
+                string nombreNivel = txtNombreNivel.Text.Trim();
+
+                btnGuardar.Enabled = false; //TODO: Evita doble clic mientras se procesa.
+                Cursor = Cursors.WaitCursor;
+
+                //TODO: Requisito 4: antes de insertar, se pregunta a la BD si ya existe
+                //TODO: un nivel con el mismo nombre.
+                bool existe = await nivelCD.ExisteNivelAsync(nombreNivel);
+                if (existe)
+                {
+                    MessageBox.Show("El registro ya existe.", "Aviso",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
                 _Nivel n = new _Nivel();
-                n.NombreNivel = txtNombreNivel.Text.Trim();
-                n.DuracionMeses = Convert.ToInt32(txtDuracion.Text.Trim());
-                n.Costo = Convert.ToDecimal(txtCosto.Text.Trim());
+                n.NombreNivel = nombreNivel;
+                n.DuracionMeses = duracion;
+                n.Costo = costo;
 
-                bool resultado = nivelCD.Insertar(n);
+                //TODO: Inserción real en la base de datos, en su versión async.
+                bool resultado = await nivelCD.InsertarAsync(n);
                 if (resultado)
                 {
                     MessageBox.Show("Nivel guardado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    CargarGrilla();
+                    await CargarDatosAsync(); //TODO: Refresca la grilla y el total.
                     LimpiarCampos();
                 }
                 else
@@ -86,9 +146,16 @@ namespace CAPA_PRESENTACION
                 MessageBox.Show("Error: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                btnGuardar.Enabled = true;
+                Cursor = Cursors.Default;
+            }
         }
 
-        private void btnActualizar_Click(object sender, EventArgs e)
+        //TODO: Botón ACTUALIZAR (Editar). Igual que Guardar, pero excluye el propio
+        //TODO: registro al validar duplicados (idExcluir = idSeleccionado).
+        private async void btnActualizar_Click(object sender, EventArgs e)
         {
             try
             {
@@ -99,20 +166,36 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
-                if (!ValidarCampos()) return;
+                if (!ValidarCampos(out int duracion, out decimal costo)) return;
+
+                string nombreNivel = txtNombreNivel.Text.Trim();
+
+                btnActualizar.Enabled = false;
+                Cursor = Cursors.WaitCursor;
+
+                //TODO: Requisito 4: chequeo de duplicados también al editar,
+                //TODO: excluyendo el registro que se está editando.
+                bool existe = await nivelCD.ExisteNivelAsync(nombreNivel, idSeleccionado);
+                if (existe)
+                {
+                    MessageBox.Show("El registro ya existe.", "Aviso",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
                 _Nivel n = new _Nivel();
                 n.IdNivel = idSeleccionado;
-                n.NombreNivel = txtNombreNivel.Text.Trim();
-                n.DuracionMeses = Convert.ToInt32(txtDuracion.Text.Trim());
-                n.Costo = Convert.ToDecimal(txtCosto.Text.Trim());
+                n.NombreNivel = nombreNivel;
+                n.DuracionMeses = duracion;
+                n.Costo = costo;
 
-                bool resultado = nivelCD.Actualizar(n);
+                //TODO: Actualización real en la base de datos, en su versión async.
+                bool resultado = await nivelCD.EditarAsync(n);
                 if (resultado)
                 {
                     MessageBox.Show("Nivel actualizado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    CargarGrilla();
+                    await CargarDatosAsync();
                     LimpiarCampos();
                 }
                 else
@@ -126,9 +209,15 @@ namespace CAPA_PRESENTACION
                 MessageBox.Show("Error: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                btnActualizar.Enabled = true;
+                Cursor = Cursors.Default;
+            }
         }
 
-        private void btnEliminar_Click(object sender, EventArgs e)
+        //TODO: Botón ELIMINAR. Elimina el nivel seleccionado en la grilla.
+        private async void btnEliminar_Click(object sender, EventArgs e)
         {
             try
             {
@@ -139,12 +228,16 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
-                bool resultado = nivelCD.Eliminar(idSeleccionado);
+                btnEliminar.Enabled = false;
+                Cursor = Cursors.WaitCursor;
+
+                //TODO: Eliminación real en la base de datos, en su versión async.
+                bool resultado = await nivelCD.EliminarAsync(idSeleccionado);
                 if (resultado)
                 {
                     MessageBox.Show("Nivel eliminado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    CargarGrilla();
+                    await CargarDatosAsync();
                     LimpiarCampos();
                 }
                 else
@@ -158,13 +251,54 @@ namespace CAPA_PRESENTACION
                 MessageBox.Show("Error: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                btnEliminar.Enabled = true;
+                Cursor = Cursors.Default;
+            }
         }
 
+        //TODO: Botón LIMPIAR. Limpia también el cuadro de búsqueda (nuevo).
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarCampos();
+            txtBuscar.Text = string.Empty;
         }
 
+        //TODO: Botón BUSCAR (NUEVO - Requisito 1). Filtra por nombre de nivel.
+        //TODO: Si el texto está vacío, simplemente recarga todo.
+        private async void btnBuscar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                btnBuscar.Enabled = false;
+                Cursor = Cursors.WaitCursor;
+
+                string texto = txtBuscar.Text.Trim();
+                if (string.IsNullOrEmpty(texto))
+                {
+                    await CargarDatosAsync();
+                    return;
+                }
+
+                List<_Nivel> resultado = await nivelCD.BuscarAsync(texto);
+                dgvNiveles.DataSource = resultado;
+                lblTotal.Text = "Resultados encontrados: " + resultado.Count;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al buscar: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnBuscar.Enabled = true;
+                Cursor = Cursors.Default;
+            }
+        }
+
+        //TODO: Al seleccionar una fila de la grilla, se cargan sus datos en los
+        //TODO: cuadros de texto para poder editar o eliminar ese registro.
         private void dgvNiveles_SelectionChanged(object sender, EventArgs e)
         {
             try
@@ -185,12 +319,14 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        //TODO: Restringe el campo Duración a solo números mientras se escribe.
         private void txtDuracion_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
                 e.Handled = true;
         }
 
+        //TODO: Restringe el campo Costo a números y un solo punto decimal.
         private void txtCosto_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != '.' && !char.IsControl(e.KeyChar))

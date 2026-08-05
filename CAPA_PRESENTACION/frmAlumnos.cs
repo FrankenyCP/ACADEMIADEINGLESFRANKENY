@@ -14,11 +14,13 @@ namespace CAPA_PRESENTACION
             InitializeComponent();
         }
 
-        private void frmAlumnos_Load(object sender, EventArgs e)
+        // async void porque es un evento de WinForms (Load)
+        private async void frmAlumnos_Load(object sender, EventArgs e)
         {
             try
             {
-                CargarGrilla();
+                await CargarGrillaAsync(); // espera a que carguen los alumnos
+                DeshabilitarCampos();
             }
             catch (Exception ex)
             {
@@ -27,9 +29,10 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        private void CargarGrilla()
+        // Trae todos los alumnos y los pone en la grilla
+        private async Task CargarGrillaAsync()
         {
-            dgvAlumnos.DataSource = alumnoCD.ObtenerTodos();
+            dgvAlumnos.DataSource = await alumnoCD.ObtenerTodosAsync();
         }
 
         private void LimpiarCampos()
@@ -42,6 +45,28 @@ namespace CAPA_PRESENTACION
             chkIntensivo.Checked = false;
             lblMensaje.Text = string.Empty;
             idSeleccionado = 0;
+        }
+
+        // Deja los campos bloqueados: así se evita editar por accidente.
+        private void DeshabilitarCampos()
+        {
+            txtNombre.Enabled = false;
+            txtApellido.Enabled = false;
+            txtTelefono.Enabled = false;
+            txtCorreo.Enabled = false;
+            dtpFechaNacimiento.Enabled = false;
+            chkIntensivo.Enabled = false;
+            btnGuardar.Enabled = false;
+        }
+
+        private void HabilitarCampos()
+        {
+            txtNombre.Enabled = true;
+            txtApellido.Enabled = true;
+            txtTelefono.Enabled = true;
+            txtCorreo.Enabled = true;
+            dtpFechaNacimiento.Enabled = true;
+            chkIntensivo.Enabled = true;
         }
 
         private bool ValidarCampos()
@@ -62,28 +87,53 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        private void btnGuardar_Click(object sender, EventArgs e)
+        // Botón "Nuevo": habilita los campos y prepara el formulario para un registro nuevo.
+        private void btnNuevo_Click(object sender, EventArgs e)
+        {
+            LimpiarCampos();
+            HabilitarCampos();
+            btnGuardar.Enabled = true;
+            btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
+            txtNombre.Focus();
+        }
+
+        private async void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
                 if (!ValidarCampos()) return;
 
+                string nombre = txtNombre.Text.Trim();
+                string apellido = txtApellido.Text.Trim();
+                string correo = txtCorreo.Text.Trim();
+
+                bool duplicado = await alumnoCD.ExisteDuplicadoAsync(nombre, apellido, correo, 0); // valida que no exista ya
+                if (duplicado)
+                {
+                    lblMensaje.ForeColor = Color.Red;
+                    lblMensaje.Text = "Ya existe un alumno con ese nombre/apellido o correo.";
+                    return;
+                }
+
                 _Alumno a = new _Alumno();
-                a.Nombre = txtNombre.Text.Trim();
-                a.Apellido = txtApellido.Text.Trim();
+                a.Nombre = nombre;
+                a.Apellido = apellido;
                 a.FechaNacimiento = dtpFechaNacimiento.Value;
                 a.Telefono = txtTelefono.Text.Trim();
-                a.Correo = txtCorreo.Text.Trim();
+                a.Correo = correo;
 
-                bool resultado = alumnoCD.Insertar(a);
+                bool resultado = await alumnoCD.InsertarAsync(a); // inserta en la BD
                 if (resultado)
                 {
                     Alumno alumnoNeg = new Alumno(a.Nombre, a.Apellido, a.Telefono,
                                                   a.FechaNacimiento, chkIntensivo.Checked);
                     MessageBox.Show(alumnoNeg.EvaluarNivel(), "Modalidad del Alumno",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    CargarGrilla();
+
+                    await CargarGrillaAsync(); // refresca la grilla
                     LimpiarCampos();
+                    DeshabilitarCampos();
                 }
                 else
                 {
@@ -98,7 +148,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        private void btnActualizar_Click(object sender, EventArgs e)
+        private async void btnActualizar_Click(object sender, EventArgs e)
         {
             try
             {
@@ -111,21 +161,37 @@ namespace CAPA_PRESENTACION
 
                 if (!ValidarCampos()) return;
 
+                string nombre = txtNombre.Text.Trim();
+                string apellido = txtApellido.Text.Trim();
+                string correo = txtCorreo.Text.Trim();
+
+                bool duplicado = await alumnoCD.ExisteDuplicadoAsync(nombre, apellido, correo, idSeleccionado); // excluye el propio registro
+                if (duplicado)
+                {
+                    lblMensaje.ForeColor = Color.Red;
+                    lblMensaje.Text = "Ya existe otro alumno con ese nombre/apellido o correo.";
+                    return;
+                }
+
                 _Alumno a = new _Alumno();
                 a.IdAlumno = idSeleccionado;
-                a.Nombre = txtNombre.Text.Trim();
-                a.Apellido = txtApellido.Text.Trim();
+                a.Nombre = nombre;
+                a.Apellido = apellido;
                 a.FechaNacimiento = dtpFechaNacimiento.Value;
                 a.Telefono = txtTelefono.Text.Trim();
-                a.Correo = txtCorreo.Text.Trim();
+                a.Correo = correo;
 
-                bool resultado = alumnoCD.Actualizar(a);
+                bool resultado = await alumnoCD.ActualizarAsync(a);
                 if (resultado)
                 {
                     MessageBox.Show("Alumno actualizado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    CargarGrilla();
+
+                    await CargarGrillaAsync();
                     LimpiarCampos();
+                    DeshabilitarCampos();
+                    btnActualizar.Enabled = false;
+                    btnEliminar.Enabled = false;
                 }
                 else
                 {
@@ -140,7 +206,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        private void btnEliminar_Click(object sender, EventArgs e)
+        private async void btnEliminar_Click(object sender, EventArgs e)
         {
             try
             {
@@ -151,7 +217,7 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
-                bool tieneMatriculas = alumnoCD.TieneMatriculas(idSeleccionado);
+                bool tieneMatriculas = await alumnoCD.TieneMatriculasAsync(idSeleccionado); // no dejar eliminar si tiene matrículas
                 if (tieneMatriculas)
                 {
                     MessageBox.Show("No se puede eliminar: el alumno tiene matrículas registradas.",
@@ -159,13 +225,17 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
-                bool resultado = alumnoCD.Eliminar(idSeleccionado);
+                bool resultado = await alumnoCD.EliminarAsync(idSeleccionado);
                 if (resultado)
                 {
                     MessageBox.Show("Alumno eliminado correctamente.", "Éxito",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    CargarGrilla();
+
+                    await CargarGrillaAsync();
                     LimpiarCampos();
+                    DeshabilitarCampos();
+                    btnActualizar.Enabled = false;
+                    btnEliminar.Enabled = false;
                 }
                 else
                 {
@@ -183,6 +253,9 @@ namespace CAPA_PRESENTACION
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarCampos();
+            DeshabilitarCampos();
+            btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
         }
 
         private void btnVerNivel_Click(object sender, EventArgs e)
@@ -196,6 +269,7 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
+                // MatriculaCD (módulo del Integrante 4) sigue siendo síncrono por ahora.
                 string nivel = matriculaCD.ObtenerNivelAlumno(idSeleccionado);
                 MessageBox.Show("Nivel actual: " + nivel, "Nivel del Alumno",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -304,11 +378,40 @@ namespace CAPA_PRESENTACION
                     dtpFechaNacimiento.Value = Convert.ToDateTime(fila.Cells["FechaNacimiento"].Value);
                     txtTelefono.Text = fila.Cells["Telefono"].Value.ToString();
                     txtCorreo.Text = fila.Cells["Correo"].Value.ToString();
+
+                    // Seleccionar una fila habilita edición sobre ESE registro.
+                    HabilitarCampos();
+                    btnGuardar.Enabled = false;
+                    btnActualizar.Enabled = true;
+                    btnEliminar.Enabled = true;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Búsqueda por nombre o apellido mientras el usuario escribe.
+        // Se dispara cada vez que escribes una letra en el buscador
+        private async void txtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                string filtro = txtBuscar.Text.Trim();
+                if (filtro == string.Empty)
+                {
+                    await CargarGrillaAsync(); // sin texto, muestra todos
+                }
+                else
+                {
+                    dgvAlumnos.DataSource = await alumnoCD.BuscarAsync(filtro); // filtra por nombre/apellido
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al buscar: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

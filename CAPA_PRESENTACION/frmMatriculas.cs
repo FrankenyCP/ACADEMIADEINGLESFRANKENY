@@ -2,12 +2,16 @@
 
 namespace CAPA_PRESENTACION
 {
+    // TODO: Formulario de gestión de matrículas
+    // Permite registrar y eliminar matrículas de alumnos en niveles con instructores
+    // Integrante 4 - Frankeny Castillo
     public partial class frmMatriculas : Form
     {
-        private MatriculaCD matriculaCD = new MatriculaCD();
-        private AlumnoCD alumnoCD = new AlumnoCD();
-        private NivelCD nivelCD = new NivelCD();
-        private InstructorCD instructorCD = new InstructorCD();
+        // TODO: DAL de matrículas y entidades relacionadas
+        private readonly MatriculaCD matriculaCD = new MatriculaCD();
+        private readonly AlumnoCD alumnoCD = new AlumnoCD();
+        private readonly NivelCD nivelCD = new NivelCD();
+        private readonly InstructorCD instructorCD = new InstructorCD();
         private int idSeleccionado = 0;
 
         public frmMatriculas()
@@ -15,40 +19,89 @@ namespace CAPA_PRESENTACION
             InitializeComponent();
         }
 
-        private void frmMatriculas_Load(object sender, EventArgs e)
+        // TODO: Al cargar el formulario se deshabilitan los controles
+        // y se cargan los datos de forma asíncrona con Task.WhenAll
+        private async void frmMatriculas_Load(object sender, EventArgs e)
         {
             try
             {
-                CargarCombos();
+                // TODO: Deshabilitar controles al iniciar — se habilitan con btnNuevo
+                DeshabilitarControles();
+                lblEstado.Text = "Cargando datos...";
+                lblEstado.ForeColor = Color.Orange;
+
+                // TODO: Cargar combos y grilla de forma asíncrona simultáneamente
+                await CargarCombosAsync();
                 CargarGrilla();
+
+                lblEstado.Text = "Listo";
+                lblEstado.ForeColor = Color.Green;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error al cargar matrículas: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
+                lblEstado.Text = "Error al cargar";
+                lblEstado.ForeColor = Color.Red;
             }
         }
 
-        private void CargarCombos()
+        // TODO: Deshabilita todos los controles de entrada del formulario
+        private void DeshabilitarControles()
         {
-            cmbAlumno.DataSource = alumnoCD.ObtenerTodos();
+            cmbAlumno.Enabled = false;
+            cmbNivel.Enabled = false;
+            cmbInstructor.Enabled = false;
+            dtpFechaMatricula.Enabled = false;
+            btnGuardar.Enabled = false;
+            btnEliminar.Enabled = false;
+            btnLimpiar.Enabled = false;
+        }
+
+        // TODO: Habilita todos los controles de entrada del formulario
+        private void HabilitarControles()
+        {
+            cmbAlumno.Enabled = true;
+            cmbNivel.Enabled = true;
+            cmbInstructor.Enabled = true;
+            dtpFechaMatricula.Enabled = true;
+            btnGuardar.Enabled = true;
+            btnEliminar.Enabled = true;
+            btnLimpiar.Enabled = true;
+        }
+
+        // TODO: Carga los tres ComboBox de forma asíncrona usando Task.WhenAll
+        // Esto evita bloquear la interfaz mientras se consulta la base de datos
+        private async Task CargarCombosAsync()
+        {
+            // TODO: Ejecutar las tres consultas simultáneamente
+            var tareasAlumnos = Task.Run(() => alumnoCD.ObtenerTodos());
+            var tareasNiveles = Task.Run(() => nivelCD.ObtenerTodos());
+            var tareasInstructores = Task.Run(() => instructorCD.ObtenerTodos());
+
+            await Task.WhenAll(tareasAlumnos, tareasNiveles, tareasInstructores);
+
+            // TODO: Asignar los resultados a los ComboBox en el hilo de la UI
+            cmbAlumno.DataSource = tareasAlumnos.Result;
             cmbAlumno.DisplayMember = "Nombre";
             cmbAlumno.ValueMember = "IdAlumno";
 
-            cmbNivel.DataSource = nivelCD.ObtenerTodos();
+            cmbNivel.DataSource = tareasNiveles.Result;
             cmbNivel.DisplayMember = "NombreNivel";
             cmbNivel.ValueMember = "IdNivel";
 
-            cmbInstructor.DataSource = instructorCD.ObtenerTodos();
+            cmbInstructor.DataSource = tareasInstructores.Result;
             cmbInstructor.DisplayMember = "Nombre";
             cmbInstructor.ValueMember = "IdInstructor";
         }
 
+        // TODO: Carga la grilla con todas las matrículas registradas
         private void CargarGrilla()
         {
             dgvMatriculas.DataSource = matriculaCD.ObtenerTodos();
         }
 
+        // TODO: Limpia los campos y deshabilita los controles nuevamente
         private void LimpiarCampos()
         {
             lblMensaje.Text = string.Empty;
@@ -57,12 +110,24 @@ namespace CAPA_PRESENTACION
             if (cmbAlumno.Items.Count > 0) cmbAlumno.SelectedIndex = 0;
             if (cmbNivel.Items.Count > 0) cmbNivel.SelectedIndex = 0;
             if (cmbInstructor.Items.Count > 0) cmbInstructor.SelectedIndex = 0;
+            DeshabilitarControles();
         }
 
+        // TODO: Botón Nuevo — habilita los controles para ingresar una nueva matrícula
+        private void btnNuevo_Click(object sender, EventArgs e)
+        {
+            HabilitarControles();
+            lblMensaje.Text = string.Empty;
+            lblEstado.Text = "Ingresando nueva matrícula...";
+            lblEstado.ForeColor = Color.Blue;
+        }
+
+        // TODO: Guarda una nueva matrícula verificando duplicados antes de insertar
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
+                // TODO: Validar que todos los campos estén seleccionados
                 if (cmbAlumno.SelectedValue == null ||
                     cmbNivel.SelectedValue == null ||
                     cmbInstructor.SelectedValue == null)
@@ -72,10 +137,24 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
+                int idAlumno = Convert.ToInt32(cmbAlumno.SelectedValue);
+                int idNivel = Convert.ToInt32(cmbNivel.SelectedValue);
+                int idInstructor = Convert.ToInt32(cmbInstructor.SelectedValue);
+
+                // TODO: Verificar que no exista una matrícula duplicada
+                // Un alumno no puede estar matriculado dos veces en el mismo nivel
+                bool duplicada = matriculaCD.ExisteMatriculaDuplicada(idAlumno, idNivel);
+                if (duplicada)
+                {
+                    lblMensaje.ForeColor = Color.Red;
+                    lblMensaje.Text = "Este alumno ya está matriculado en ese nivel.";
+                    return;
+                }
+
                 _Matricula m = new _Matricula();
-                m.IdAlumno = Convert.ToInt32(cmbAlumno.SelectedValue);
-                m.IdNivel = Convert.ToInt32(cmbNivel.SelectedValue);
-                m.IdInstructor = Convert.ToInt32(cmbInstructor.SelectedValue);
+                m.IdAlumno = idAlumno;
+                m.IdNivel = idNivel;
+                m.IdInstructor = idInstructor;
                 m.FechaMatricula = dtpFechaMatricula.Value;
 
                 bool resultado = matriculaCD.Insertar(m);
@@ -85,6 +164,8 @@ namespace CAPA_PRESENTACION
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     LimpiarCampos();
+                    lblEstado.Text = "Listo";
+                    lblEstado.ForeColor = Color.Green;
                 }
                 else
                 {
@@ -99,6 +180,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Elimina la matrícula seleccionada si no tiene pagos asociados
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             try
@@ -110,6 +192,7 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
+                // TODO: Verificar integridad referencial antes de eliminar
                 bool tienePagos = matriculaCD.TienePagos(idSeleccionado);
                 if (tienePagos)
                 {
@@ -139,18 +222,22 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Limpia los campos y deshabilita los controles
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarCampos();
+            lblEstado.Text = "Listo";
+            lblEstado.ForeColor = Color.Green;
         }
 
-        private void dgvMatriculas_CellClick(object sender, DataGridViewCellEventArgs e)
+        // TODO: Al seleccionar una fila en la grilla se guarda el ID de la matrícula
+        private void dgvMatriculas_SelectionChanged(object sender, EventArgs e)
         {
             try
             {
-                if (e.RowIndex >= 0)
+                if (dgvMatriculas.SelectedRows.Count > 0)
                 {
-                    DataGridViewRow fila = dgvMatriculas.Rows[e.RowIndex];
+                    DataGridViewRow fila = dgvMatriculas.SelectedRows[0];
                     idSeleccionado = Convert.ToInt32(fila.Cells["IdMatricula"].Value);
                 }
             }
@@ -160,5 +247,7 @@ namespace CAPA_PRESENTACION
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        
     }
 }

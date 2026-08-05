@@ -21,7 +21,7 @@ namespace CAPA_PRESENTACION
                 if (usuario == string.Empty || contrasena == string.Empty)
                 {
                     lblMensaje.ForeColor = Color.Red;
-                    lblMensaje.Text = "Por favor ingrese usuario y contraseÃ±a.";
+                    lblMensaje.Text = "Por favor ingrese usuario y contraseña.";
                     return;
                 }
 
@@ -38,7 +38,7 @@ namespace CAPA_PRESENTACION
                 else
                 {
                     lblMensaje.ForeColor = Color.Red;
-                    lblMensaje.Text = "Usuario o contraseÃ±a incorrectos.";
+                    lblMensaje.Text = "Usuario o contraseña incorrectos.";
                 }
             }
             catch (Exception ex)
