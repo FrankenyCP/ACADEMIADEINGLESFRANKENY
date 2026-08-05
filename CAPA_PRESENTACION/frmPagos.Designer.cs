@@ -1,4 +1,4 @@
-ï»¿namespace CAPA_PRESENTACION
+namespace CAPA_PRESENTACION
 {
     partial class frmPagos
     {
@@ -54,6 +54,8 @@
             lblCuenta = new Label();
             lblBanco = new Label();
             sqlCommandBuilder1 = new Microsoft.Data.SqlClient.SqlCommandBuilder();
+            btn_ExportarPDF = new Button();
+            btn_ExportarExcelfrmPagos = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvPagos).BeginInit();
             pnlDatosBancarios.SuspendLayout();
             SuspendLayout();
@@ -67,7 +69,7 @@
             lblTitulo.Name = "lblTitulo";
             lblTitulo.Size = new Size(259, 41);
             lblTitulo.TabIndex = 0;
-            lblTitulo.Text = "GestiÃ³n de Pagos";
+            lblTitulo.Text = "Gestión de Pagos";
             lblTitulo.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // lblMatricula
@@ -79,7 +81,7 @@
             lblMatricula.Name = "lblMatricula";
             lblMatricula.Size = new Size(118, 28);
             lblMatricula.TabIndex = 1;
-            lblMatricula.Text = "MatrÃ­cula *";
+            lblMatricula.Text = "Matrícula *";
             // 
             // lblFechaPago
             // 
@@ -112,7 +114,7 @@
             lblMetodoPago.Name = "lblMetodoPago";
             lblMetodoPago.Size = new Size(183, 28);
             lblMetodoPago.TabIndex = 4;
-            lblMetodoPago.Text = "MÃ©todo de Pago *";
+            lblMetodoPago.Text = "Método de Pago *";
             // 
             // cmbMatricula
             // 
@@ -245,7 +247,7 @@
             pnlDatosBancarios.Controls.Add(lblBeneficiario);
             pnlDatosBancarios.Controls.Add(lblCuenta);
             pnlDatosBancarios.Controls.Add(lblBanco);
-            pnlDatosBancarios.Location = new Point(146, 19);
+            pnlDatosBancarios.Location = new Point(209, 76);
             pnlDatosBancarios.Name = "pnlDatosBancarios";
             pnlDatosBancarios.Size = new Size(1028, 675);
             pnlDatosBancarios.TabIndex = 15;
@@ -301,7 +303,7 @@
             btnCerrarPanel.FlatStyle = FlatStyle.Flat;
             btnCerrarPanel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnCerrarPanel.ForeColor = Color.White;
-            btnCerrarPanel.Location = new Point(986, 3);
+            btnCerrarPanel.Location = new Point(988, 0);
             btnCerrarPanel.Name = "btnCerrarPanel";
             btnCerrarPanel.Size = new Size(40, 40);
             btnCerrarPanel.TabIndex = 4;
@@ -340,7 +342,7 @@
             lblCuenta.Name = "lblCuenta";
             lblCuenta.Size = new Size(227, 31);
             lblCuenta.TabIndex = 1;
-            lblCuenta.Text = "NÃºmero de Cuenta: ";
+            lblCuenta.Text = "Número de Cuenta: ";
             // 
             // lblBanco
             // 
@@ -353,12 +355,43 @@
             lblBanco.TabIndex = 0;
             lblBanco.Text = " Banco Popular Dominicano";
             // 
+            // btn_ExportarPDF
+            // 
+            btn_ExportarPDF.BackColor = Color.CadetBlue;
+            btn_ExportarPDF.Cursor = Cursors.Hand;
+            btn_ExportarPDF.FlatStyle = FlatStyle.Flat;
+            btn_ExportarPDF.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btn_ExportarPDF.ForeColor = Color.White;
+            btn_ExportarPDF.Location = new Point(1097, 112);
+            btn_ExportarPDF.Name = "btn_ExportarPDF";
+            btn_ExportarPDF.Size = new Size(150, 57);
+            btn_ExportarPDF.TabIndex = 16;
+            btn_ExportarPDF.Text = "Exportar PDF";
+            btn_ExportarPDF.UseVisualStyleBackColor = false;
+            btn_ExportarPDF.Click += new System.EventHandler(this.btnExportarPDF_Click);
+            // 
+            // btn_ExportarExcelfrmPagos
+            // 
+            btn_ExportarExcelfrmPagos.BackColor = Color.CadetBlue;
+            btn_ExportarExcelfrmPagos.Cursor = Cursors.Hand;
+            btn_ExportarExcelfrmPagos.FlatStyle = FlatStyle.Flat;
+            btn_ExportarExcelfrmPagos.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btn_ExportarExcelfrmPagos.ForeColor = Color.White;
+            btn_ExportarExcelfrmPagos.Location = new Point(1277, 112);
+            btn_ExportarExcelfrmPagos.Name = "btn_ExportarExcelfrmPagos";
+            btn_ExportarExcelfrmPagos.Size = new Size(169, 57);
+            btn_ExportarExcelfrmPagos.TabIndex = 17;
+            btn_ExportarExcelfrmPagos.Text = "Exportar Excel";
+            btn_ExportarExcelfrmPagos.UseVisualStyleBackColor = false;
+            btn_ExportarExcelfrmPagos.Click += new System.EventHandler(this.btn_ExportarExcelfrmPagos_Click);
+            // 
             // frmPagos
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
             ClientSize = new Size(1582, 753);
+            Controls.Add(btn_ExportarExcelfrmPagos);
             Controls.Add(pnlDatosBancarios);
             Controls.Add(dgvPagos);
             Controls.Add(btnEliminar);
@@ -375,10 +408,11 @@
             Controls.Add(lblFechaPago);
             Controls.Add(lblMatricula);
             Controls.Add(lblTitulo);
+            Controls.Add(btn_ExportarPDF);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "frmPagos";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "GestiÃ³n de Pagos";
+            Text = "Gestión de Pagos";
             Load += frmPagos_Load;
             ((System.ComponentModel.ISupportInitialize)dgvPagos).EndInit();
             pnlDatosBancarios.ResumeLayout(false);
@@ -415,5 +449,7 @@
         private Label label4;
         private Label label3;
         private Label label2;
+        private Button btn_ExportarPDF;
+        private Button btn_ExportarExcelfrmPagos;
     }
 }

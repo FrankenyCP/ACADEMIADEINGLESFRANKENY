@@ -1,5 +1,6 @@
-ï»¿using CAPA_DATOS;
+using CAPA_DATOS;
 using CAPA_NEGOCIOS;
+using System.Linq;
 
 namespace CAPA_PRESENTACION
 {
@@ -51,10 +52,10 @@ namespace CAPA_PRESENTACION
                 "Total de Alumnos:       " + totalAlumnos + "\r\n" +
                 "Total de Niveles:       " + totalNiveles + "\r\n" +
                 "Total de Instructores:  " + totalInstructores + "\r\n" +
-                "Total de MatrÃ­culas:    " + totalMatriculas + "\r\n" +
+                "Total de Matrículas:    " + totalMatriculas + "\r\n" +
                 "Total Recaudado:        RD$" + totalRecaudado.ToString("N2") + "\r\n\r\n" +
                 ciclo.ObtenerResumen() + "\r\n" +
-                "Ciclo activo: " + (ciclo.EstaActivo() ? "SÃ­" : "No");
+                "Ciclo activo: " + (ciclo.EstaActivo() ? "Sí" : "No");
         }
 
         private void btnActualizar_Click(object sender, EventArgs e)
@@ -66,6 +67,49 @@ namespace CAPA_PRESENTACION
             catch (Exception ex)
             {
                 MessageBox.Show("Error: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void btn_ExportarReportePDF_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(txtReporte.Text))
+                {
+                    MessageBox.Show("No hay información de reporte para exportar.",
+                                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                using (SaveFileDialog dialogo = new SaveFileDialog())
+                {
+                    dialogo.Filter = "Archivo PDF (*.pdf)|*.pdf";
+                    dialogo.FileName = "Reporte_General_" + DateTime.Now.ToString("yyyyMMdd") + ".pdf";
+
+                    if (dialogo.ShowDialog() != DialogResult.OK)
+                        return;
+
+                    string titulo = "Reporte General";
+                    List<string> contenido = txtReporte.Text
+                        .Split(new[] { "\r\n" }, StringSplitOptions.None)
+                        .ToList();
+
+                    iExportador exportador = new ExportadorPdf();
+                    bool exito = await exportador.ExportarAsync(titulo, contenido, dialogo.FileName);
+
+                    if (exito)
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(dialogo.FileName)
+                        {
+                            UseShellExecute = true
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al exportar a PDF: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
