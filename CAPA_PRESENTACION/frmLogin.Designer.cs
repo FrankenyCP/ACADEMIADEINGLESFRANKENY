@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             lblTitulo = new Label();
             lblSubtitulo = new Label();
             lblUsuario = new Label();
@@ -36,6 +37,7 @@
             btnIngresar = new Button();
             txtUsuario = new TextBox();
             txtContrasena = new TextBox();
+            guna2BorderlessForm1 = new Guna.UI2.WinForms.Guna2BorderlessForm(components);
             SuspendLayout();
             // 
             // lblTitulo
@@ -43,7 +45,7 @@
             lblTitulo.AutoSize = true;
             lblTitulo.Font = new Font("Segoe UI", 22.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTitulo.ForeColor = Color.White;
-            lblTitulo.Location = new Point(66, 9);
+            lblTitulo.Location = new Point(379, 25);
             lblTitulo.Name = "lblTitulo";
             lblTitulo.Size = new Size(365, 50);
             lblTitulo.TabIndex = 0;
@@ -55,7 +57,7 @@
             lblSubtitulo.AutoSize = true;
             lblSubtitulo.Font = new Font("Segoe UI", 12F);
             lblSubtitulo.ForeColor = Color.White;
-            lblSubtitulo.Location = new Point(130, 68);
+            lblSubtitulo.Location = new Point(453, 99);
             lblSubtitulo.Name = "lblSubtitulo";
             lblSubtitulo.Size = new Size(222, 28);
             lblSubtitulo.TabIndex = 1;
@@ -67,7 +69,7 @@
             lblUsuario.AutoSize = true;
             lblUsuario.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblUsuario.ForeColor = Color.White;
-            lblUsuario.Location = new Point(205, 159);
+            lblUsuario.Location = new Point(517, 160);
             lblUsuario.Name = "lblUsuario";
             lblUsuario.Size = new Size(89, 28);
             lblUsuario.TabIndex = 2;
@@ -78,7 +80,7 @@
             lblContrasena.AutoSize = true;
             lblContrasena.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblContrasena.ForeColor = Color.White;
-            lblContrasena.Location = new Point(187, 278);
+            lblContrasena.Location = new Point(496, 279);
             lblContrasena.Name = "lblContrasena";
             lblContrasena.Size = new Size(123, 28);
             lblContrasena.TabIndex = 3;
@@ -100,18 +102,18 @@
             btnIngresar.Cursor = Cursors.Hand;
             btnIngresar.FlatStyle = FlatStyle.Flat;
             btnIngresar.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnIngresar.Location = new Point(185, 394);
+            btnIngresar.Location = new Point(494, 391);
             btnIngresar.Name = "btnIngresar";
             btnIngresar.Size = new Size(120, 55);
             btnIngresar.TabIndex = 5;
             btnIngresar.Text = "Ingresar";
             btnIngresar.UseVisualStyleBackColor = false;
-            btnIngresar.Click += this.btnIngresar_Click;
+            btnIngresar.Click += btnIngresar_Click;
             // 
             // txtUsuario
             // 
             txtUsuario.BackColor = Color.White;
-            txtUsuario.Location = new Point(185, 204);
+            txtUsuario.Location = new Point(496, 201);
             txtUsuario.Name = "txtUsuario";
             txtUsuario.Size = new Size(125, 27);
             txtUsuario.TabIndex = 6;
@@ -119,18 +121,24 @@
             // txtContrasena
             // 
             txtContrasena.BackColor = Color.White;
-            txtContrasena.Location = new Point(185, 320);
+            txtContrasena.Location = new Point(494, 330);
             txtContrasena.Name = "txtContrasena";
             txtContrasena.PasswordChar = '*';
             txtContrasena.Size = new Size(125, 27);
             txtContrasena.TabIndex = 7;
+            // 
+            // guna2BorderlessForm1
+            // 
+            guna2BorderlessForm1.ContainerControl = this;
+            guna2BorderlessForm1.DockIndicatorTransparencyValue = 0.6D;
+            guna2BorderlessForm1.TransparentWhileDrag = true;
             // 
             // frmLogin
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
-            ClientSize = new Size(502, 553);
+            ClientSize = new Size(1109, 553);
             Controls.Add(txtContrasena);
             Controls.Add(txtUsuario);
             Controls.Add(btnIngresar);
@@ -139,7 +147,7 @@
             Controls.Add(lblUsuario);
             Controls.Add(lblSubtitulo);
             Controls.Add(lblTitulo);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;
             Name = "frmLogin";
             StartPosition = FormStartPosition.CenterScreen;
@@ -158,5 +166,6 @@
         private Button btnIngresar;
         private TextBox txtUsuario;
         private TextBox txtContrasena;
+        private Guna.UI2.WinForms.Guna2BorderlessForm guna2BorderlessForm1;
     }
 }

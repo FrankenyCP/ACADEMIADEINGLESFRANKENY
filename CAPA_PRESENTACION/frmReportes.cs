@@ -69,5 +69,20 @@ namespace CAPA_PRESENTACION
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void coloruiControl1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void colorPickerButton1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void gridAwareTextBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -28,9 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             lblTitulo = new Label();
             txtReporte = new TextBox();
             btnActualizar = new Button();
+         
             SuspendLayout();
             // 
             // lblTitulo
@@ -71,6 +73,8 @@
             btnActualizar.Text = "Actualizar Reporte";
             btnActualizar.UseVisualStyleBackColor = false;
             btnActualizar.Click += btnActualizar_Click;
+           
+           
             // 
             // frmReportes
             // 
@@ -96,5 +100,6 @@
         private Label lblTitulo;
         private TextBox txtReporte;
         private Button btnActualizar;
+        
     }
 }

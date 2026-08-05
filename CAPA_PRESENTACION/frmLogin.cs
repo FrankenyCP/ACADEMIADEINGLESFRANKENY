@@ -16,12 +16,15 @@ namespace CAPA_PRESENTACION
                 string usuario = txtUsuario.Text.Trim();
                 string contrasena = txtContrasena.Text.Trim();
 
+                
+
                 if (usuario == string.Empty || contrasena == string.Empty)
                 {
                     lblMensaje.ForeColor = Color.Red;
                     lblMensaje.Text = "Por favor ingrese usuario y contraseña.";
                     return;
                 }
+
 
                 GestorLogin gestor = new GestorLogin();
                 bool acceso = gestor.ValidarAcceso(usuario, contrasena);
