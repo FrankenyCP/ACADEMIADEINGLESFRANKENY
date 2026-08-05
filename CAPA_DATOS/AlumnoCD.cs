@@ -244,4 +244,5 @@ public class AlumnoCD : ICrudAsync<_Alumno>
         a.Correo = reader.GetString(5);
         return a;
     }
+    //TODO juan
 }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            //TODO: Controles ORIGINALES del formulario (ya existían, no se tocaron).
             lblTitulo = new Label();
             lblNombreNivel = new Label();
             lblDuracion = new Label();
@@ -41,10 +42,16 @@
             btnLimpiar = new Button();
             btnEliminar = new Button();
             dgvNiveles = new DataGridView();
+            //TODO: Controles NUEVOS agregados para cumplir Requisito 1 (Buscar)
+            //TODO: y para mostrar el total de registros cargados.
+            lblBuscar = new Label();
+            txtBuscar = new TextBox();
+            btnBuscar = new Button();
+            lblTotal = new Label();
             ((System.ComponentModel.ISupportInitialize)dgvNiveles).BeginInit();
             SuspendLayout();
             // 
-            // lblTitulo
+            // lblTitulo  //TODO: Título del formulario "Gestión de Niveles" (original).
             // 
             lblTitulo.AutoSize = true;
             lblTitulo.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -56,7 +63,7 @@
             lblTitulo.Text = "Gestión de Niveles";
             lblTitulo.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // lblNombreNivel
+            // lblNombreNivel  //TODO: Etiqueta "Nombre del Nivel *" (original).
             // 
             lblNombreNivel.AutoSize = true;
             lblNombreNivel.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -67,7 +74,7 @@
             lblNombreNivel.TabIndex = 1;
             lblNombreNivel.Text = "Nombre del Nivel *";
             // 
-            // lblDuracion
+            // lblDuracion  //TODO: Etiqueta "Duración (Meses) *" (original).
             // 
             lblDuracion.AutoSize = true;
             lblDuracion.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -78,7 +85,7 @@
             lblDuracion.TabIndex = 2;
             lblDuracion.Text = "Duración (Meses) *";
             // 
-            // lblCosto
+            // lblCosto  //TODO: Etiqueta "Costo *" (original).
             // 
             lblCosto.AutoSize = true;
             lblCosto.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -89,14 +96,14 @@
             lblCosto.TabIndex = 3;
             lblCosto.Text = "Costo *";
             // 
-            // txtNombreNivel
+            // txtNombreNivel  //TODO: Cuadro de texto donde se escribe el nombre del nivel (original).
             // 
             txtNombreNivel.Location = new Point(52, 168);
             txtNombreNivel.Name = "txtNombreNivel";
             txtNombreNivel.Size = new Size(207, 27);
             txtNombreNivel.TabIndex = 4;
             // 
-            // txtDuracion
+            // txtDuracion  //TODO: Cuadro de texto donde se escribe la duración en meses (original).
             // 
             txtDuracion.Location = new Point(52, 300);
             txtDuracion.Name = "txtDuracion";
@@ -104,7 +111,7 @@
             txtDuracion.TabIndex = 5;
             txtDuracion.KeyPress += txtDuracion_KeyPress;
             // 
-            // txtCosto
+            // txtCosto  //TODO: Cuadro de texto donde se escribe el costo del nivel (original).
             // 
             txtCosto.Location = new Point(52, 419);
             txtCosto.Name = "txtCosto";
@@ -112,7 +119,7 @@
             txtCosto.TabIndex = 6;
             txtCosto.KeyPress += txtCosto_KeyPress;
             // 
-            // lblMensaje
+            // lblMensaje  //TODO: Etiqueta roja donde se muestran errores de validación (original).
             // 
             lblMensaje.AutoSize = true;
             lblMensaje.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -122,7 +129,7 @@
             lblMensaje.Size = new Size(0, 28);
             lblMensaje.TabIndex = 7;
             // 
-            // btnGuardar
+            // btnGuardar  //TODO: Botón que INSERTA un nuevo nivel (original).
             // 
             btnGuardar.BackColor = Color.CadetBlue;
             btnGuardar.Cursor = Cursors.Hand;
@@ -137,7 +144,7 @@
             btnGuardar.UseVisualStyleBackColor = false;
             btnGuardar.Click += btnGuardar_Click;
             // 
-            // btnActualizar
+            // btnActualizar  //TODO: Botón que EDITA el nivel seleccionado (original).
             // 
             btnActualizar.BackColor = Color.CadetBlue;
             btnActualizar.Cursor = Cursors.Hand;
@@ -152,7 +159,7 @@
             btnActualizar.UseVisualStyleBackColor = false;
             btnActualizar.Click += btnActualizar_Click;
             // 
-            // btnLimpiar
+            // btnLimpiar  //TODO: Botón que limpia los campos del formulario (original).
             // 
             btnLimpiar.BackColor = Color.CadetBlue;
             btnLimpiar.Cursor = Cursors.Hand;
@@ -167,7 +174,7 @@
             btnLimpiar.UseVisualStyleBackColor = false;
             btnLimpiar.Click += btnLimpiar_Click;
             // 
-            // btnEliminar
+            // btnEliminar  //TODO: Botón que ELIMINA el nivel seleccionado (original).
             // 
             btnEliminar.BackColor = Color.Red;
             btnEliminar.Cursor = Cursors.Hand;
@@ -182,7 +189,7 @@
             btnEliminar.UseVisualStyleBackColor = false;
             btnEliminar.Click += btnEliminar_Click;
             // 
-            // dgvNiveles
+            // dgvNiveles  //TODO: Grilla (tabla) que muestra la lista de niveles (original).
             // 
             dgvNiveles.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvNiveles.BackgroundColor = Color.FromArgb(27, 42, 74);
@@ -197,12 +204,62 @@
             dgvNiveles.TabIndex = 12;
             dgvNiveles.SelectionChanged += dgvNiveles_SelectionChanged;
             // 
+            // lblBuscar  //TODO: Etiqueta del cuadro de búsqueda (NUEVO).
+            // 
+            lblBuscar.AutoSize = true;
+            lblBuscar.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblBuscar.ForeColor = Color.White;
+            lblBuscar.Location = new Point(52, 460);
+            lblBuscar.Name = "lblBuscar";
+            lblBuscar.Size = new Size(73, 28);
+            lblBuscar.TabIndex = 13;
+            lblBuscar.Text = "Buscar";
+            // 
+            // txtBuscar  //TODO: Cuadro donde el usuario escribe el nombre del nivel a buscar (NUEVO).
+            // 
+            txtBuscar.Location = new Point(52, 495);
+            txtBuscar.Name = "txtBuscar";
+            txtBuscar.PlaceholderText = "Nombre del nivel";
+            txtBuscar.Size = new Size(207, 27);
+            txtBuscar.TabIndex = 14;
+            // 
+            // btnBuscar  //TODO: Botón que ejecuta la búsqueda contra la base de datos (NUEVO).
+            // 
+            btnBuscar.BackColor = Color.CadetBlue;
+            btnBuscar.Cursor = Cursors.Hand;
+            btnBuscar.FlatStyle = FlatStyle.Flat;
+            btnBuscar.Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnBuscar.ForeColor = Color.White;
+            btnBuscar.Location = new Point(52, 530);
+            btnBuscar.Name = "btnBuscar";
+            btnBuscar.Size = new Size(207, 37);
+            btnBuscar.TabIndex = 15;
+            btnBuscar.Text = "Buscar";
+            btnBuscar.UseVisualStyleBackColor = false;
+            btnBuscar.Click += btnBuscar_Click;
+            // 
+            // lblTotal  //TODO: Muestra "Total de niveles: N" o "Resultados encontrados: N" (NUEVO).
+            // 
+            lblTotal.AutoSize = true;
+            lblTotal.Font = new Font("Segoe UI", 10F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            lblTotal.ForeColor = Color.Gainsboro;
+            lblTotal.Location = new Point(443, 272);
+            lblTotal.Name = "lblTotal";
+            lblTotal.Size = new Size(0, 23);
+            lblTotal.TabIndex = 16;
+            // 
             // frmNiveles
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
             ClientSize = new Size(1182, 753);
+            //TODO: Se agregan los 4 controles nuevos a la colección Controls del formulario.
+            Controls.Add(lblTotal);
+            Controls.Add(btnBuscar);
+            Controls.Add(txtBuscar);
+            Controls.Add(lblBuscar);
+            //TODO: Controles originales (sin cambios de orden ni de nombre).
             Controls.Add(dgvNiveles);
             Controls.Add(btnEliminar);
             Controls.Add(btnLimpiar);
@@ -229,6 +286,7 @@
 
         #endregion
 
+        //TODO: Campos originales (declaración de los controles visuales del formulario).
         private Label lblTitulo;
         private Label lblNombreNivel;
         private Label lblDuracion;
@@ -242,5 +300,10 @@
         private Button btnLimpiar;
         private Button btnEliminar;
         private DataGridView dgvNiveles;
+        //TODO: Campos NUEVOS: buscador y etiqueta de total.
+        private Label lblBuscar;
+        private TextBox txtBuscar;
+        private Button btnBuscar;
+        private Label lblTotal;
     }
 }
