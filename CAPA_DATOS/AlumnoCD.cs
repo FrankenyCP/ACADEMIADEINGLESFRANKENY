@@ -143,8 +143,8 @@ public class AlumnoCD : ICrudAsync<_Alumno>
         return filas > 0;
     }
 
-    // Actualiza un alumno existente
-    public async Task<bool> ActualizarAsync(_Alumno a)
+    // Edita un alumno existente
+    public async Task<bool> EditarAsync(_Alumno a)
     {
         using var con = await Conexion.ObtenerConexionAsync();
         using var cmd = new SqlCommand(

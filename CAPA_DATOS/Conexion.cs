@@ -15,6 +15,7 @@ public class Conexion
         conexion.Open();
         return conexion;
     }
+
     public static async Task<bool> ProbarConexionAsync()
     {
         try
@@ -30,5 +31,12 @@ public class Conexion
         {
             return false;
         }
+    }
+
+    public static async Task<SqlConnection> ObtenerConexionAsync()
+    {
+        var conexion = new SqlConnection(_cadena);
+        await conexion.OpenAsync();
+        return conexion;
     }
 }
