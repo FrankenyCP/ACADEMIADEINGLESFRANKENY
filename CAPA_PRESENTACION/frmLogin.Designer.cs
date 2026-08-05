@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             lblTitulo = new Label();
             lblSubtitulo = new Label();
             lblUsuario = new Label();
@@ -36,6 +37,7 @@
             btnIngresar = new Button();
             txtUsuario = new TextBox();
             txtContrasena = new TextBox();
+            guna2BorderlessForm1 = new Guna.UI2.WinForms.Guna2BorderlessForm(components);
             SuspendLayout();
             // 
             // lblTitulo
@@ -43,10 +45,9 @@
             lblTitulo.AutoSize = true;
             lblTitulo.Font = new Font("Segoe UI", 22.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTitulo.ForeColor = Color.White;
-            lblTitulo.Location = new Point(107, 14);
-            lblTitulo.Margin = new Padding(5, 0, 5, 0);
+            lblTitulo.Location = new Point(379, 25);
             lblTitulo.Name = "lblTitulo";
-            lblTitulo.Size = new Size(588, 81);
+            lblTitulo.Size = new Size(365, 50);
             lblTitulo.TabIndex = 0;
             lblTitulo.Text = "Academia De Inglés";
             lblTitulo.TextAlign = ContentAlignment.MiddleCenter;
@@ -56,10 +57,9 @@
             lblSubtitulo.AutoSize = true;
             lblSubtitulo.Font = new Font("Segoe UI", 12F);
             lblSubtitulo.ForeColor = Color.White;
-            lblSubtitulo.Location = new Point(211, 109);
-            lblSubtitulo.Margin = new Padding(5, 0, 5, 0);
+            lblSubtitulo.Location = new Point(453, 99);
             lblSubtitulo.Name = "lblSubtitulo";
-            lblSubtitulo.Size = new Size(365, 45);
+            lblSubtitulo.Size = new Size(222, 28);
             lblSubtitulo.TabIndex = 1;
             lblSubtitulo.Text = "Bienvenido, inicia sesión";
             lblSubtitulo.TextAlign = ContentAlignment.MiddleCenter;
@@ -69,10 +69,9 @@
             lblUsuario.AutoSize = true;
             lblUsuario.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblUsuario.ForeColor = Color.White;
-            lblUsuario.Location = new Point(333, 254);
-            lblUsuario.Margin = new Padding(5, 0, 5, 0);
+            lblUsuario.Location = new Point(517, 160);
             lblUsuario.Name = "lblUsuario";
-            lblUsuario.Size = new Size(144, 45);
+            lblUsuario.Size = new Size(89, 28);
             lblUsuario.TabIndex = 2;
             lblUsuario.Text = "Usuario:";
             // 
@@ -81,10 +80,9 @@
             lblContrasena.AutoSize = true;
             lblContrasena.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblContrasena.ForeColor = Color.White;
-            lblContrasena.Location = new Point(304, 445);
-            lblContrasena.Margin = new Padding(5, 0, 5, 0);
+            lblContrasena.Location = new Point(496, 279);
             lblContrasena.Name = "lblContrasena";
-            lblContrasena.Size = new Size(197, 45);
+            lblContrasena.Size = new Size(123, 28);
             lblContrasena.TabIndex = 3;
             lblContrasena.Text = "Contraseña:";
             // 
@@ -92,10 +90,9 @@
             // 
             lblMensaje.AutoSize = true;
             lblMensaje.ForeColor = Color.Red;
-            lblMensaje.Location = new Point(382, 784);
-            lblMensaje.Margin = new Padding(5, 0, 5, 0);
+            lblMensaje.Location = new Point(235, 490);
             lblMensaje.Name = "lblMensaje";
-            lblMensaje.Size = new Size(0, 32);
+            lblMensaje.Size = new Size(0, 20);
             lblMensaje.TabIndex = 4;
             lblMensaje.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -105,10 +102,9 @@
             btnIngresar.Cursor = Cursors.Hand;
             btnIngresar.FlatStyle = FlatStyle.Flat;
             btnIngresar.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnIngresar.Location = new Point(301, 630);
-            btnIngresar.Margin = new Padding(5, 5, 5, 5);
+            btnIngresar.Location = new Point(494, 391);
             btnIngresar.Name = "btnIngresar";
-            btnIngresar.Size = new Size(195, 88);
+            btnIngresar.Size = new Size(120, 55);
             btnIngresar.TabIndex = 5;
             btnIngresar.Text = "Ingresar";
             btnIngresar.UseVisualStyleBackColor = false;
@@ -117,28 +113,32 @@
             // txtUsuario
             // 
             txtUsuario.BackColor = Color.White;
-            txtUsuario.Location = new Point(301, 326);
-            txtUsuario.Margin = new Padding(5, 5, 5, 5);
+            txtUsuario.Location = new Point(496, 201);
             txtUsuario.Name = "txtUsuario";
-            txtUsuario.Size = new Size(201, 39);
+            txtUsuario.Size = new Size(125, 27);
             txtUsuario.TabIndex = 6;
             // 
             // txtContrasena
             // 
             txtContrasena.BackColor = Color.White;
-            txtContrasena.Location = new Point(301, 512);
-            txtContrasena.Margin = new Padding(5, 5, 5, 5);
+            txtContrasena.Location = new Point(494, 330);
             txtContrasena.Name = "txtContrasena";
             txtContrasena.PasswordChar = '*';
-            txtContrasena.Size = new Size(201, 39);
+            txtContrasena.Size = new Size(125, 27);
             txtContrasena.TabIndex = 7;
+            // 
+            // guna2BorderlessForm1
+            // 
+            guna2BorderlessForm1.ContainerControl = this;
+            guna2BorderlessForm1.DockIndicatorTransparencyValue = 0.6D;
+            guna2BorderlessForm1.TransparentWhileDrag = true;
             // 
             // frmLogin
             // 
-            AutoScaleDimensions = new SizeF(13F, 32F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
-            ClientSize = new Size(816, 885);
+            ClientSize = new Size(1109, 553);
             Controls.Add(txtContrasena);
             Controls.Add(txtUsuario);
             Controls.Add(btnIngresar);
@@ -147,13 +147,11 @@
             Controls.Add(lblUsuario);
             Controls.Add(lblSubtitulo);
             Controls.Add(lblTitulo);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            Margin = new Padding(5, 5, 5, 5);
+            FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;
             Name = "frmLogin";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Academia de Inglés — Login";
-            
             ResumeLayout(false);
             PerformLayout();
         }
@@ -168,5 +166,6 @@
         private Button btnIngresar;
         private TextBox txtUsuario;
         private TextBox txtContrasena;
+        private Guna.UI2.WinForms.Guna2BorderlessForm guna2BorderlessForm1;
     }
 }

@@ -27,7 +27,7 @@ public class CicloAcademico
     ~CicloAcademico()
     {
     
-      // TODO  Destructor: libera los recursos en memoria asociados al ciclo académico 2524.
+      // TODO Destructor: libera los recursos en memoria asociados al ciclo académico.
       // Al destruirse este objeto, se notifica el cierre del ciclo y se liberan
       // las referencias a fechas y nombre del ciclo retenidas durante la sesión.
       // En un entorno de producción, aquí se generarían las constancias de nivel

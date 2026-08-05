@@ -9,5 +9,7 @@ public class GestorLogin
         UsuarioCD usuarioCD = new UsuarioCD();
 
         return usuarioCD.ValidarUsuario(usuario, contrasena);
+
+
     }
 }

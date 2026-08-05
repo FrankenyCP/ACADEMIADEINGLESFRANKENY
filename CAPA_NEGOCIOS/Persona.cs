@@ -27,7 +27,7 @@ public abstract class Persona
     // Método abstracto — obliga a cada clase hija a implementarlo
     public abstract string EvaluarNivel();
 
-    // Método virtual — puede ser sobreescrito por las clases hijas
+    // TODO Método virtual — puede ser sobreescrito por las clases hijas
     public virtual string ObtenerInformacion()
     {
         return "Persona: " + this.nombre + " " + this.apellido;
