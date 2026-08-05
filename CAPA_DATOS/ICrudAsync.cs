@@ -12,7 +12,7 @@ public interface ICrudAsync<T>
     Task<bool> InsertarAsync(T entidad);
 
     //TODO: Edita/actualiza un registro existente de forma asíncrona. Devuelve true si se actualizó.
-    Task<bool> EditarAsync(T entidad);
+    Task<bool> ActualizarAsync(T entidad);
 
     //TODO: Elimina un registro por su Id de forma asíncrona. Devuelve true si se eliminó.
     Task<bool> EliminarAsync(int id);

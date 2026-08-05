@@ -1,27 +1,44 @@
 ﻿using CAPA_DATOS;
+using CAPA_NEGOCIOS;
 
 namespace CAPA_PRESENTACION
 {
+    // TODO: Formulario principal del sistema — Dashboard de la Academia de Inglés
+    // Muestra indicadores en tiempo real y permite navegar a todos los módulos
+    // Integrante 4 - Frankeny Castillo
     public partial class frmPrincipal : Form
     {
+        // TODO: Servicio del Dashboard — usa la interfaz IDashboardServicio
+        // para obtener los indicadores del sistema de forma asíncrona
+        private readonly IDashboardServicio _dashboardServicio;
+
+        // TODO: Constructor — inicializa el servicio del Dashboard
         public frmPrincipal()
         {
             InitializeComponent();
+            _dashboardServicio = new DashboardServicio();
         }
 
-        private void frmPrincipal_Load(object sender, EventArgs e)
+        // TODO: Al cargar el formulario se inicializan los niveles y el Dashboard
+        private async void frmPrincipal_Load(object sender, EventArgs e)
         {
             try
             {
+                // TODO: Insertar niveles iniciales si la tabla está vacía
                 CargarNivelesIniciales();
+
+                // TODO: Cargar el Dashboard de forma asíncrona
+                await CargarDashboardAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar niveles: " + ex.Message, "Error",
+                MessageBox.Show("Error al cargar el sistema: " + ex.Message, "Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
+        // TODO: Inserta los niveles Básico, Intermedio y Avanzado automáticamente
+        // si la tabla NIVELES está vacía al iniciar el sistema por primera vez
         private void CargarNivelesIniciales()
         {
             NivelCD nivelCD = new NivelCD();
@@ -42,6 +59,56 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Carga todos los indicadores del Dashboard de forma asíncrona
+        // Usa Task.WhenAll para ejecutar todas las consultas simultáneamente
+        // y así no bloquear la interfaz mientras se obtienen los datos
+        private async Task CargarDashboardAsync()
+        {
+            try
+            {
+                lblEstadoDashboard.Text = "Actualizando...";
+                lblEstadoDashboard.ForeColor = Color.Orange;
+
+                // TODO: Ejecutar todas las consultas al mismo tiempo con Task.WhenAll
+                var tareaAlumnos = _dashboardServicio.ObtenerTotalAlumnosAsync();
+                var tareaMatriculas = _dashboardServicio.ObtenerTotalMatriculasActivasAsync();
+                var tareaInstructores = _dashboardServicio.ObtenerTotalInstructoresAsync();
+                var tareaIngresos = _dashboardServicio.ObtenerTotalIngresosAsync();
+                var tareaPendiente = _dashboardServicio.ObtenerTotalPendienteAsync();
+                var tareaNivel = _dashboardServicio.ObtenerNivelMasPopularAsync();
+
+                await Task.WhenAll(tareaAlumnos, tareaMatriculas, tareaInstructores,
+                                   tareaIngresos, tareaPendiente, tareaNivel);
+
+                // TODO: Actualizar los labels del Dashboard con los resultados
+                lblTotalAlumnos.Text = tareaAlumnos.Result.ToString();
+                lblTotalMatriculas.Text = tareaMatriculas.Result.ToString();
+                lblTotalInstructores.Text = tareaInstructores.Result.ToString();
+                lblTotalIngresos.Text = "RD$" + tareaIngresos.Result.ToString("N2");
+                lblTotalPendiente.Text = "RD$" + tareaPendiente.Result.ToString("N2");
+                lblNivelPopular.Text = tareaNivel.Result;
+
+                lblEstadoDashboard.Text = "✓ Dashboard actualizado — " + DateTime.Now.ToString("hh:mm tt");
+                lblEstadoDashboard.ForeColor = Color.LimeGreen;
+            }
+            catch (Exception ex)
+            {
+                lblEstadoDashboard.Text = "Error al cargar Dashboard";
+                lblEstadoDashboard.ForeColor = Color.Red;
+                MessageBox.Show("Error en Dashboard: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // TODO: Botón para refrescar el Dashboard manualmente
+        private async void btnRefrescarDashboard_Click(object sender, EventArgs e)
+        {
+            await CargarDashboardAsync();
+        }
+
+        // ===================== NAVEGACIÓN =====================
+
+        // TODO: Abre el formulario de gestión de alumnos
         private void btnAlumnos_Click(object sender, EventArgs e)
         {
             try
@@ -56,6 +123,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Abre el formulario de gestión de niveles
         private void btnNiveles_Click(object sender, EventArgs e)
         {
             try
@@ -70,6 +138,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Abre el formulario de gestión de instructores
         private void btnInstructores_Click(object sender, EventArgs e)
         {
             try
@@ -84,6 +153,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Abre el formulario de gestión de matrículas
         private void btnMatriculas_Click(object sender, EventArgs e)
         {
             try
@@ -98,6 +168,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Abre el formulario de gestión de pagos
         private void btnPagos_Click(object sender, EventArgs e)
         {
             try
@@ -112,6 +183,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Abre el formulario de reportes
         private void btnReportes_Click(object sender, EventArgs e)
         {
             try
@@ -126,6 +198,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Cierra la aplicación con confirmación
         private void btnSalir_Click(object sender, EventArgs e)
         {
             DialogResult respuesta = MessageBox.Show(
@@ -135,5 +208,22 @@ namespace CAPA_PRESENTACION
             if (respuesta == DialogResult.Yes)
                 Application.Exit();
         }
+
+        // TODO: Abre el formulario de consulta de matrículas y estado de pagos
+        private void btnConsultaMatriculas_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                frmConsultaMatriculas frm = new frmConsultaMatriculas();
+                frm.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
+
+
 }
