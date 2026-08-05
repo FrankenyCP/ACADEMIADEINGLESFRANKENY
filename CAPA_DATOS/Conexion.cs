@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace CAPA_DATOS;
 
@@ -13,5 +14,21 @@ public class Conexion
         var conexion = new SqlConnection(_cadena);
         conexion.Open();
         return conexion;
+    }
+    public static async Task<bool> ProbarConexionAsync()
+    {
+        try
+        {
+            using SqlConnection conexion =
+                new SqlConnection(_cadena);
+
+            await conexion.OpenAsync();
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
