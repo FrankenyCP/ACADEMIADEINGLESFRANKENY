@@ -4,7 +4,7 @@ namespace CAPA_PRESENTACION
 {
     // TODO: Formulario de gestión de matrículas
     // Permite registrar y eliminar matrículas de alumnos en niveles con instructores
-    // Integrante 4 - Frankeny Castillo
+
     public partial class frmMatriculas : Form
     {
         // TODO: DAL de matrículas y entidades relacionadas
@@ -25,14 +25,28 @@ namespace CAPA_PRESENTACION
         {
             try
             {
-                // TODO: Deshabilitar controles al iniciar — se habilitan con btnNuevo
-                DeshabilitarControles();
+                // En modo integrado el encabezado con btnNuevo está oculto.
+                // Por eso los campos deben quedar habilitados automáticamente.
+                if (modoIntegradoSolicitado)
+                {
+                    HabilitarControles();
+                }
+                else
+                {
+                    DeshabilitarControles();
+                }
+
                 lblEstado.Text = "Cargando datos...";
                 lblEstado.ForeColor = Color.Orange;
 
                 // TODO: Cargar combos y grilla de forma asíncrona simultáneamente
                 await CargarCombosAsync();
                 CargarGrilla();
+
+                if (modoIntegradoSolicitado)
+                {
+                    HabilitarControles();
+                }
 
                 lblEstado.Text = "Listo";
                 lblEstado.ForeColor = Color.Green;
@@ -248,6 +262,6 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        
+
     }
 }

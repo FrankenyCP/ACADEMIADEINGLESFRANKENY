@@ -8,6 +8,7 @@ namespace CAPA_PRESENTACION
         private AlumnoCD alumnoCD = new AlumnoCD();
         private MatriculaCD matriculaCD = new MatriculaCD();
         private int idSeleccionado = 0;
+        private readonly IServicioCorreo servicioCorreo = new ServicioCorreo();
 
         public frmAlumnos()
         {

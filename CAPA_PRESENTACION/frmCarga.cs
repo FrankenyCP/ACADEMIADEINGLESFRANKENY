@@ -33,7 +33,7 @@ namespace CAPA_PRESENTACION
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterScreen;
             WindowState = FormWindowState.Normal;
-            ClientSize = new Size(1200, 750);
+            ClientSize = new Size(1400, 800);
 
             DoubleBuffered = true;
 
