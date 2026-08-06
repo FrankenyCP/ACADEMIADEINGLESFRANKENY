@@ -182,7 +182,7 @@ namespace CAPA_PRESENTACION
                 a.Telefono = txtTelefono.Text.Trim();
                 a.Correo = correo;
 
-                bool resultado = await alumnoCD.ActualizarAsync(a);
+                bool resultado = await alumnoCD.EditarAsync(a);
                 if (resultado)
                 {
                     MessageBox.Show("Alumno actualizado correctamente.", "Éxito",
