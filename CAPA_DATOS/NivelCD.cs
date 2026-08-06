@@ -259,4 +259,9 @@ public class NivelCD : ICrudAsync<_Nivel>
             return (int)await cmd.ExecuteScalarAsync();
         }
     }
+
+    public Task<bool> ActualizarAsync(_Nivel entidad)
+    {
+        throw new NotImplementedException();
+    }
 }

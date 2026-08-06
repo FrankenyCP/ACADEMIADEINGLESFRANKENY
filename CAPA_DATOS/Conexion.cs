@@ -31,4 +31,20 @@ public class Conexion
             return false;
         }
     }
+
+    internal static async Task<SqlConnection> ObtenerConexionAsync()
+    {
+        SqlConnection conexion = new SqlConnection(_cadena);
+
+        try
+        {
+            await conexion.OpenAsync();
+            return conexion;
+        }
+        catch
+        {
+            await conexion.DisposeAsync();
+            throw;
+        }
+    }
 }
