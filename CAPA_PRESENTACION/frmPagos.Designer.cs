@@ -247,9 +247,9 @@ namespace CAPA_PRESENTACION
             pnlDatosBancarios.Controls.Add(lblBeneficiario);
             pnlDatosBancarios.Controls.Add(lblCuenta);
             pnlDatosBancarios.Controls.Add(lblBanco);
-            pnlDatosBancarios.Location = new Point(209, 76);
+            pnlDatosBancarios.Location = new Point(342, 188);
             pnlDatosBancarios.Name = "pnlDatosBancarios";
-            pnlDatosBancarios.Size = new Size(1028, 675);
+            pnlDatosBancarios.Size = new Size(1228, 675);
             pnlDatosBancarios.TabIndex = 15;
             pnlDatosBancarios.Visible = false;
             // 
@@ -303,7 +303,7 @@ namespace CAPA_PRESENTACION
             btnCerrarPanel.FlatStyle = FlatStyle.Flat;
             btnCerrarPanel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnCerrarPanel.ForeColor = Color.White;
-            btnCerrarPanel.Location = new Point(988, 0);
+            btnCerrarPanel.Location = new Point(1188, 0);
             btnCerrarPanel.Name = "btnCerrarPanel";
             btnCerrarPanel.Size = new Size(40, 40);
             btnCerrarPanel.TabIndex = 4;
@@ -368,7 +368,7 @@ namespace CAPA_PRESENTACION
             btn_ExportarPDF.TabIndex = 16;
             btn_ExportarPDF.Text = "Exportar PDF";
             btn_ExportarPDF.UseVisualStyleBackColor = false;
-            btn_ExportarPDF.Click += new System.EventHandler(this.btnExportarPDF_Click);
+            btn_ExportarPDF.Click += btnExportarPDF_Click;
             // 
             // btn_ExportarExcelfrmPagos
             // 
@@ -383,14 +383,14 @@ namespace CAPA_PRESENTACION
             btn_ExportarExcelfrmPagos.TabIndex = 17;
             btn_ExportarExcelfrmPagos.Text = "Exportar Excel";
             btn_ExportarExcelfrmPagos.UseVisualStyleBackColor = false;
-            btn_ExportarExcelfrmPagos.Click += new System.EventHandler(this.btn_ExportarExcelfrmPagos_Click);
+            btn_ExportarExcelfrmPagos.Click += btn_ExportarExcelfrmPagos_Click;
             // 
             // frmPagos
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(27, 42, 74);
-            ClientSize = new Size(1582, 753);
+            ClientSize = new Size(1400, 800);
             Controls.Add(btn_ExportarExcelfrmPagos);
             Controls.Add(pnlDatosBancarios);
             Controls.Add(dgvPagos);

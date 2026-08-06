@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Guna.UI2.WinForms" Version="2.0.4.8" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\CAPA_DATOS\CAPA_DATOS.csproj" />
     <ProjectReference Include="..\CAPA_NEGOCIOS\CAPA_NEGOCIOS.csproj" />
   </ItemGroup>

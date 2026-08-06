@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             lblTitulo = new Label();
             lblSubtitulo = new Label();
             lblUsuario = new Label();
@@ -37,7 +36,6 @@
             btnIngresar = new Button();
             txtUsuario = new TextBox();
             txtContrasena = new TextBox();
-            guna2BorderlessForm1 = new Guna.UI2.WinForms.Guna2BorderlessForm(components);
             SuspendLayout();
             // 
             // lblTitulo
@@ -127,12 +125,6 @@
             txtContrasena.Size = new Size(125, 27);
             txtContrasena.TabIndex = 7;
             // 
-            // guna2BorderlessForm1
-            // 
-            guna2BorderlessForm1.ContainerControl = this;
-            guna2BorderlessForm1.DockIndicatorTransparencyValue = 0.6D;
-            guna2BorderlessForm1.TransparentWhileDrag = true;
-            // 
             // frmLogin
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -152,6 +144,7 @@
             Name = "frmLogin";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Academia de Inglés — Login";
+            Load += frmLogin_Load;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -166,6 +159,5 @@
         private Button btnIngresar;
         private TextBox txtUsuario;
         private TextBox txtContrasena;
-        private Guna.UI2.WinForms.Guna2BorderlessForm guna2BorderlessForm1;
     }
 }

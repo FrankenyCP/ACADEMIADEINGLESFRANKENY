@@ -297,4 +297,9 @@ public class InstructorCD : ICrudAsync<_Instructor>
             return (int)await cmd.ExecuteScalarAsync();
         }
     }
+
+    public Task<bool> ActualizarAsync(_Instructor entidad)
+    {
+        throw new NotImplementedException();
+    }
 }
