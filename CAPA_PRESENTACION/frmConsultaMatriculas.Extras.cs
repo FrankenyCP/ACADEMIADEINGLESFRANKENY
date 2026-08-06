@@ -73,9 +73,7 @@ namespace CAPA_PRESENTACION
         {
             get
             {
-                CreateParams parametros = base.CreateParams;
-                parametros.ExStyle |= 0x02000000;
-                return parametros;
+                return base.CreateParams;
             }
         }
 
@@ -105,9 +103,9 @@ namespace CAPA_PRESENTACION
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        "Error al preparar la consulta:\r\n" +
+                        "Error al preparar el formulario:\r\n" +
                         ex.Message,
-                        "Consulta de matriculas",
+                        "Consulta de matrículas",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
@@ -115,7 +113,6 @@ namespace CAPA_PRESENTACION
                 finally
                 {
                     ResumeLayout(true);
-                    PerformLayout();
                 }
             }
 
@@ -127,15 +124,27 @@ namespace CAPA_PRESENTACION
 
                 BeginInvoke(new Action(() =>
                 {
-                    AjustarDisenoConsulta();
+                    if (IsDisposed)
+                        return;
 
-                    if (modoIntegradoSolicitado)
+                    SuspendLayout();
+
+                    try
                     {
-                        AplicarModoIntegrado();
+                        if (modoIntegradoSolicitado)
+                        {
+                            AplicarModoIntegrado();
+                        }
+                        else
+                        {
+                            AjustarDisenoConsulta();
+                        }
+                        ActualizarCantidadConsulta();
                     }
-                    ActualizarCantidadConsulta();
-                    Invalidate(true);
-                    Update();
+                    finally
+                    {
+                        ResumeLayout(true);
+                    }
                 }));
             }
         }
@@ -256,12 +265,6 @@ namespace CAPA_PRESENTACION
             Controls.Add(pnlMenuConsulta);
 
             pnlCuerpoConsulta.Resize +=
-                (sender, e) =>
-                {
-                    AjustarDisenoConsulta();
-                };
-
-            Resize +=
                 (sender, e) =>
                 {
                     AjustarDisenoConsulta();
@@ -1873,19 +1876,24 @@ namespace CAPA_PRESENTACION
         {
             modoIntegradoSolicitado = true;
 
+            TopLevel = false;
             FormBorderStyle = FormBorderStyle.None;
             WindowState = FormWindowState.Normal;
             StartPosition = FormStartPosition.Manual;
 
             MinimumSize = Size.Empty;
             MaximumSize = Size.Empty;
-            AutoScaleMode = AutoScaleMode.None;
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScroll = false;
 
             Dock = DockStyle.Fill;
-            Margin = new Padding(0);
-            Padding = new Padding(0);
+            Margin = Padding.Empty;
+            Padding = Padding.Empty;
 
-            AplicarModoIntegrado();
+            if (disenoConsultaInicializado)
+            {
+                AplicarModoIntegrado();
+            }
         }
 
         private void AplicarModoIntegrado()
@@ -1899,9 +1907,12 @@ namespace CAPA_PRESENTACION
             {
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Normal;
+                StartPosition = FormStartPosition.Manual;
                 MinimumSize = Size.Empty;
                 MaximumSize = Size.Empty;
-                AutoScaleMode = AutoScaleMode.None;
+                AutoScaleMode = AutoScaleMode.Dpi;
+                Margin = Padding.Empty;
+                Padding = Padding.Empty;
 
                 if (pnlMenuConsulta != null)
                 {
@@ -1922,8 +1933,8 @@ namespace CAPA_PRESENTACION
                     pnlContenidoConsulta.Visible = true;
                     pnlContenidoConsulta.Dock = DockStyle.Fill;
                     pnlContenidoConsulta.Location = Point.Empty;
-                    pnlContenidoConsulta.Margin = new Padding(0);
-                    pnlContenidoConsulta.Padding = new Padding(0);
+                    pnlContenidoConsulta.Margin = Padding.Empty;
+                    pnlContenidoConsulta.Padding = Padding.Empty;
                     pnlContenidoConsulta.BringToFront();
                 }
 
@@ -1932,17 +1943,10 @@ namespace CAPA_PRESENTACION
                     pnlCuerpoConsulta.Visible = true;
                     pnlCuerpoConsulta.Dock = DockStyle.Fill;
                     pnlCuerpoConsulta.Location = Point.Empty;
-                    pnlCuerpoConsulta.Margin = new Padding(0);
+                    pnlCuerpoConsulta.Margin = Padding.Empty;
                 }
 
-                PerformLayout();
-
-                if (pnlCuerpoConsulta != null)
-                {
-                    AjustarDisenoConsulta();
-                }
-
-                Invalidate(true);
+                AjustarDisenoConsulta();
             }
             finally
             {

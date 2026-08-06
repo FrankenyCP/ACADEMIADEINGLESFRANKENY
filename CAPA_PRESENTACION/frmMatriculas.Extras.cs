@@ -1,9 +1,13 @@
-﻿using System;
+﻿using CAPA_NEGOCIOS;
+using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CAPA_PRESENTACION
@@ -61,6 +65,12 @@ namespace CAPA_PRESENTACION
         private Button btnLimpiarBusqueda = null!;
 
         private object? fuenteOriginalMatriculas;
+
+        private readonly ServicioCorreo servicioCorreo =
+            new ServicioCorreo();
+
+        private bool eliminacionCorreoConfigurada;
+        private bool actualizandoDatosMatricula;
 
         // =========================================================
         // REDUCIR PARPADEO
@@ -156,6 +166,8 @@ namespace CAPA_PRESENTACION
             CrearPanelLista();
             ConfigurarControlesFormulario();
             ConfigurarBotonesAccion();
+            ConfigurarEliminacionMatriculaConCorreo();
+
             ConfigurarBuscador();
             ConfigurarDataGridView();
             ConfigurarEventosVisuales();
@@ -1570,6 +1582,466 @@ namespace CAPA_PRESENTACION
                 cantidad == 1
                     ? "Mostrando 1 matricula"
                     : $"Mostrando {cantidad} matriculas";
+        }
+
+
+        // =========================================================
+        // ELIMINACION DE MATRICULA CON CORREO DE CANCELACION
+        // =========================================================
+
+        private void ConfigurarEliminacionMatriculaConCorreo()
+        {
+            if (eliminacionCorreoConfigurada)
+                return;
+
+            eliminacionCorreoConfigurada = true;
+
+            /*
+             * Se conectan una sola vez los eventos definitivos.
+             * El botón Nuevo actualiza los ComboBox antes de habilitar
+             * el formulario, evitando depender de VisibleChanged.
+             */
+
+            btnNuevo.Click -= btnNuevo_Click;
+            btnNuevo.Click -= btnNuevoConActualizacion_Click;
+            btnNuevo.Click += btnNuevoConActualizacion_Click;
+
+            btnGuardar.Click -= btnGuardar_Click;
+            btnGuardar.Click += btnGuardar_Click;
+
+            btnLimpiar.Click -= btnLimpiar_Click;
+            btnLimpiar.Click += btnLimpiar_Click;
+
+            btnEliminar.Click -= btnEliminar_Click;
+            btnEliminar.Click -= btnEliminarConCorreo_Click;
+            btnEliminar.Click += btnEliminarConCorreo_Click;
+
+            dgvMatriculas.SelectionChanged -=
+                dgvMatriculas_SelectionChanged;
+
+            dgvMatriculas.SelectionChanged +=
+                dgvMatriculas_SelectionChanged;
+        }
+
+        private async void btnNuevoConActualizacion_Click(
+            object? sender,
+            EventArgs e)
+        {
+            if (actualizandoDatosMatricula)
+                return;
+
+            actualizandoDatosMatricula = true;
+            btnNuevo.Enabled = false;
+
+            try
+            {
+                lblEstado.Text =
+                    "Actualizando alumnos, niveles e instructores...";
+
+                lblEstado.ForeColor =
+                    Color.Orange;
+
+                await CargarCombosAsync();
+
+                fuenteOriginalMatriculas =
+                    dgvMatriculas.DataSource;
+
+                /*
+                 * Ejecuta la lógica original de frmMatriculas.cs:
+                 * habilita campos y prepara una matrícula nueva.
+                 */
+                btnNuevo_Click(sender!, e);
+
+                lblEstado.Text =
+                    "Datos actualizados. Puede registrar la matrícula.";
+
+                lblEstado.ForeColor =
+                    Color.Green;
+            }
+            catch (Exception ex)
+            {
+                lblEstado.Text =
+                    "No se pudieron actualizar los datos";
+
+                lblEstado.ForeColor =
+                    Color.Red;
+
+                MessageBox.Show(
+                    "No se pudieron actualizar los alumnos, " +
+                    "niveles e instructores:\r\n\r\n" +
+                    ex.Message,
+                    "Matrículas",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+            finally
+            {
+                btnNuevo.Enabled = true;
+                actualizandoDatosMatricula = false;
+            }
+        }
+
+        private async void btnEliminarConCorreo_Click(
+            object? sender,
+            EventArgs e)
+        {
+            try
+            {
+                if (idSeleccionado == 0 ||
+                    dgvMatriculas.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show(
+                        "Seleccione una matrícula de la grilla para eliminar.",
+                        "Aviso",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+
+                    return;
+                }
+
+                DataGridViewRow fila =
+                    dgvMatriculas.SelectedRows[0];
+
+                int idAlumno = ObtenerEnteroCeldaMatricula(
+                    fila,
+                    "IdAlumno"
+                );
+
+                string nombreAlumno =
+                    ObtenerTextoCeldaMatricula(
+                        fila,
+                        "NombreAlumno",
+                        "Alumno",
+                        "Nombre"
+                    );
+
+                string nombreNivel =
+                    ObtenerTextoCeldaMatricula(
+                        fila,
+                        "NombreNivel",
+                        "Nivel"
+                    );
+
+                string correoAlumno =
+                    ObtenerTextoCeldaMatricula(
+                        fila,
+                        "Correo",
+                        "CorreoAlumno",
+                        "Email"
+                    );
+
+                if (idAlumno > 0 &&
+                    (string.IsNullOrWhiteSpace(nombreAlumno) ||
+                     string.IsNullOrWhiteSpace(correoAlumno)))
+                {
+                    CompletarDatosAlumnoMatricula(
+                        idAlumno,
+                        ref nombreAlumno,
+                        ref correoAlumno
+                    );
+                }
+
+                if (string.IsNullOrWhiteSpace(nombreAlumno))
+                {
+                    nombreAlumno = "Alumno seleccionado";
+                }
+
+                if (string.IsNullOrWhiteSpace(nombreNivel))
+                {
+                    nombreNivel = "Nivel registrado";
+                }
+
+                bool tienePagos =
+                    matriculaCD.TienePagos(idSeleccionado);
+
+                if (tienePagos)
+                {
+                    MessageBox.Show(
+                        "No se puede eliminar: la matrícula tiene pagos registrados.",
+                        "Operación no permitida",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+
+                    return;
+                }
+
+                DialogResult confirmacion =
+                    MessageBox.Show(
+                        "¿Desea cancelar esta matrícula?\r\n\r\n" +
+                        "Alumno: " + nombreAlumno + "\r\n" +
+                        "Nivel: " + nombreNivel + "\r\n\r\n" +
+                        "Al confirmar, se enviará un correo de cancelación.",
+                        "Confirmar cancelación",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                    );
+
+                if (confirmacion != DialogResult.Yes)
+                    return;
+
+                btnEliminar.Enabled = false;
+
+                lblEstado.Text =
+                    "Cancelando matrícula...";
+
+                lblEstado.ForeColor =
+                    Color.Orange;
+
+                bool resultado =
+                    matriculaCD.Eliminar(idSeleccionado);
+
+                if (!resultado)
+                {
+                    MessageBox.Show(
+                        "Error al eliminar la matrícula.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+
+                    return;
+                }
+
+                bool correoEnviado = false;
+                string errorCorreo = string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(correoAlumno))
+                {
+                    try
+                    {
+                        await servicioCorreo
+                            .EnviarCancelacionMatriculaAsync(
+                                correoAlumno,
+                                nombreAlumno,
+                                nombreNivel
+                            );
+
+                        correoEnviado = true;
+                    }
+                    catch (Exception exCorreo)
+                    {
+                        errorCorreo = exCorreo.Message;
+                    }
+                }
+
+                CargarGrilla();
+                LimpiarCampos();
+
+                lblEstado.Text = "Listo";
+                lblEstado.ForeColor = Color.Green;
+
+                if (correoEnviado)
+                {
+                    MessageBox.Show(
+                        "Matrícula cancelada correctamente.\r\n" +
+                        "El correo de cancelación fue enviado.",
+                        "Cancelación completada",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+                else if (string.IsNullOrWhiteSpace(correoAlumno))
+                {
+                    MessageBox.Show(
+                        "Matrícula cancelada correctamente.\r\n\r\n" +
+                        "No se envió el correo porque el alumno " +
+                        "no tiene un correo registrado.",
+                        "Cancelación completada",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "La matrícula fue cancelada, pero el correo " +
+                        "no pudo enviarse.\r\n\r\n" +
+                        errorCorreo,
+                        "Advertencia de correo",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error al cancelar la matrícula:\r\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+            finally
+            {
+                if (idSeleccionado != 0)
+                {
+                    btnEliminar.Enabled = true;
+                }
+            }
+        }
+
+        private void CompletarDatosAlumnoMatricula(
+            int idAlumno,
+            ref string nombreAlumno,
+            ref string correoAlumno)
+        {
+            object? alumnos =
+                alumnoCD.ObtenerTodos();
+
+            if (alumnos is not IEnumerable lista)
+                return;
+
+            foreach (object? alumno in lista)
+            {
+                if (alumno == null)
+                    continue;
+
+                int idActual =
+                    ObtenerEnteroPropiedadMatricula(
+                        alumno,
+                        "IdAlumno"
+                    );
+
+                if (idActual != idAlumno)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(nombreAlumno))
+                {
+                    string nombre =
+                        ObtenerTextoPropiedadMatricula(
+                            alumno,
+                            "Nombre"
+                        );
+
+                    string apellido =
+                        ObtenerTextoPropiedadMatricula(
+                            alumno,
+                            "Apellido"
+                        );
+
+                    nombreAlumno =
+                        (nombre + " " + apellido).Trim();
+                }
+
+                if (string.IsNullOrWhiteSpace(correoAlumno))
+                {
+                    correoAlumno =
+                        ObtenerTextoPropiedadMatricula(
+                            alumno,
+                            "Correo",
+                            "Email"
+                        );
+                }
+
+                break;
+            }
+        }
+
+        private static int ObtenerEnteroCeldaMatricula(
+            DataGridViewRow fila,
+            params string[] nombres)
+        {
+            foreach (string nombre in nombres)
+            {
+                if (!fila.DataGridView.Columns.Contains(nombre))
+                    continue;
+
+                object? valor =
+                    fila.Cells[nombre].Value;
+
+                if (valor != null &&
+                    int.TryParse(
+                        valor.ToString(),
+                        out int numero))
+                {
+                    return numero;
+                }
+            }
+
+            return 0;
+        }
+
+        private static string ObtenerTextoCeldaMatricula(
+            DataGridViewRow fila,
+            params string[] nombres)
+        {
+            foreach (string nombre in nombres)
+            {
+                if (!fila.DataGridView.Columns.Contains(nombre))
+                    continue;
+
+                string texto =
+                    fila.Cells[nombre].Value?
+                        .ToString()?
+                        .Trim()
+                    ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(texto))
+                    return texto;
+            }
+
+            return string.Empty;
+        }
+
+        private static int ObtenerEnteroPropiedadMatricula(
+            object objeto,
+            string nombre)
+        {
+            PropertyInfo? propiedad =
+                objeto.GetType().GetProperty(
+                    nombre,
+                    BindingFlags.Public |
+                    BindingFlags.Instance |
+                    BindingFlags.IgnoreCase
+                );
+
+            if (propiedad == null)
+                return 0;
+
+            object? valor =
+                propiedad.GetValue(objeto);
+
+            return int.TryParse(
+                valor?.ToString(),
+                out int numero
+            )
+                ? numero
+                : 0;
+        }
+
+        private static string ObtenerTextoPropiedadMatricula(
+            object objeto,
+            params string[] nombres)
+        {
+            foreach (string nombre in nombres)
+            {
+                PropertyInfo? propiedad =
+                    objeto.GetType().GetProperty(
+                        nombre,
+                        BindingFlags.Public |
+                        BindingFlags.Instance |
+                        BindingFlags.IgnoreCase
+                    );
+
+                if (propiedad == null)
+                    continue;
+
+                string texto =
+                    propiedad.GetValue(objeto)?
+                        .ToString()?
+                        .Trim()
+                    ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(texto))
+                    return texto;
+            }
+
+            return string.Empty;
         }
 
         // =========================================================

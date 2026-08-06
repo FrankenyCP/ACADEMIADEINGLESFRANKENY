@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Threading.Tasks;
 
 namespace CAPA_NEGOCIOS
 {
     public interface IServicioCorreo
     {
         Task EnviarRegistroExitosoAsync(
-            string correoDestino,
-            string nombreAlumno
+            string destinatario,
+            string nombreCompleto
         );
 
-        Task EnviarConfirmacionPagoAsync(
-            string correoDestino,
+        Task EnviarCancelacionMatriculaAsync(
+            string destinatario,
             string nombreAlumno,
-            decimal monto,
-            DateTime fechaPago,
-            string metodoPago
+            string nombreNivel
         );
     }
 }
