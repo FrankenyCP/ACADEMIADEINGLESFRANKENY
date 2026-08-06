@@ -65,12 +65,7 @@ namespace CAPA_PRESENTACION
         {
             get
             {
-                CreateParams parametros = base.CreateParams;
-
-                // WS_EX_COMPOSITED
-                parametros.ExStyle |= 0x02000000;
-
-                return parametros;
+                return base.CreateParams;
             }
         }
 
@@ -80,7 +75,8 @@ namespace CAPA_PRESENTACION
 
         protected override void SetVisibleCore(bool value)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+            if (LicenseManager.UsageMode ==
+                LicenseUsageMode.Designtime)
             {
                 base.SetVisibleCore(value);
                 return;
@@ -99,9 +95,9 @@ namespace CAPA_PRESENTACION
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        "Error al preparar el diseno de instructores:\r\n" +
+                        "Error al preparar el formulario:\r\n" +
                         ex.Message,
-                        "Gestion de Instructores",
+                        "Gestión de Instructores",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
@@ -109,7 +105,6 @@ namespace CAPA_PRESENTACION
                 finally
                 {
                     ResumeLayout(true);
-                    PerformLayout();
                 }
             }
 
@@ -121,14 +116,26 @@ namespace CAPA_PRESENTACION
 
                 BeginInvoke(new Action(() =>
                 {
-                    AjustarDisenoResponsivo();
+                    if (IsDisposed)
+                        return;
 
-                    if (modoIntegradoSolicitado)
+                    SuspendLayout();
+
+                    try
                     {
-                        AplicarModoIntegrado();
+                        if (modoIntegradoSolicitado)
+                        {
+                            AplicarModoIntegrado();
+                        }
+                        else
+                        {
+                            AjustarDisenoResponsivo();
+                        }
                     }
-                    Invalidate(true);
-                    Update();
+                    finally
+                    {
+                        ResumeLayout(true);
+                    }
                 }));
             }
         }
@@ -242,11 +249,6 @@ namespace CAPA_PRESENTACION
             Controls.Add(pnlMenuLateral);
 
             pnlCuerpo.Resize += (sender, e) =>
-            {
-                AjustarDisenoResponsivo();
-            };
-
-            Resize += (sender, e) =>
             {
                 AjustarDisenoResponsivo();
             };
@@ -1903,19 +1905,24 @@ namespace CAPA_PRESENTACION
         {
             modoIntegradoSolicitado = true;
 
+            TopLevel = false;
             FormBorderStyle = FormBorderStyle.None;
             WindowState = FormWindowState.Normal;
             StartPosition = FormStartPosition.Manual;
 
             MinimumSize = Size.Empty;
             MaximumSize = Size.Empty;
-            AutoScaleMode = AutoScaleMode.None;
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScroll = false;
 
             Dock = DockStyle.Fill;
-            Margin = new Padding(0);
-            Padding = new Padding(0);
+            Margin = Padding.Empty;
+            Padding = Padding.Empty;
 
-            AplicarModoIntegrado();
+            if (disenoModernoInicializado)
+            {
+                AplicarModoIntegrado();
+            }
         }
 
         private void AplicarModoIntegrado()
@@ -1929,9 +1936,12 @@ namespace CAPA_PRESENTACION
             {
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Normal;
+                StartPosition = FormStartPosition.Manual;
                 MinimumSize = Size.Empty;
                 MaximumSize = Size.Empty;
-                AutoScaleMode = AutoScaleMode.None;
+                AutoScaleMode = AutoScaleMode.Dpi;
+                Margin = Padding.Empty;
+                Padding = Padding.Empty;
 
                 if (pnlMenuLateral != null)
                 {
@@ -1952,8 +1962,8 @@ namespace CAPA_PRESENTACION
                     pnlContenido.Visible = true;
                     pnlContenido.Dock = DockStyle.Fill;
                     pnlContenido.Location = Point.Empty;
-                    pnlContenido.Margin = new Padding(0);
-                    pnlContenido.Padding = new Padding(0);
+                    pnlContenido.Margin = Padding.Empty;
+                    pnlContenido.Padding = Padding.Empty;
                     pnlContenido.BringToFront();
                 }
 
@@ -1962,17 +1972,10 @@ namespace CAPA_PRESENTACION
                     pnlCuerpo.Visible = true;
                     pnlCuerpo.Dock = DockStyle.Fill;
                     pnlCuerpo.Location = Point.Empty;
-                    pnlCuerpo.Margin = new Padding(0);
+                    pnlCuerpo.Margin = Padding.Empty;
                 }
 
-                PerformLayout();
-
-                if (pnlCuerpo != null)
-                {
-                    AjustarDisenoResponsivo();
-                }
-
-                Invalidate(true);
+                AjustarDisenoResponsivo();
             }
             finally
             {

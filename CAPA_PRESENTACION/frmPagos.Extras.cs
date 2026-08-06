@@ -82,9 +82,7 @@ namespace CAPA_PRESENTACION
         {
             get
             {
-                CreateParams parametros = base.CreateParams;
-                parametros.ExStyle |= 0x02000000;
-                return parametros;
+                return base.CreateParams;
             }
         }
 
@@ -114,9 +112,9 @@ namespace CAPA_PRESENTACION
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        "Error al preparar el diseno de pagos:\r\n" +
+                        "Error al preparar el formulario:\r\n" +
                         ex.Message,
-                        "Gestion de Pagos",
+                        "Gestión de Pagos",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
@@ -124,7 +122,6 @@ namespace CAPA_PRESENTACION
                 finally
                 {
                     ResumeLayout(true);
-                    PerformLayout();
                 }
             }
 
@@ -136,15 +133,27 @@ namespace CAPA_PRESENTACION
 
                 BeginInvoke(new Action(() =>
                 {
-                    AjustarDisenoPagos();
+                    if (IsDisposed)
+                        return;
 
-                    if (modoIntegradoSolicitado)
+                    SuspendLayout();
+
+                    try
                     {
-                        AplicarModoIntegrado();
+                        if (modoIntegradoSolicitado)
+                        {
+                            AplicarModoIntegrado();
+                        }
+                        else
+                        {
+                            AjustarDisenoPagos();
+                        }
+                        ActualizarResumenPagos();
                     }
-                    ActualizarResumenPagos();
-                    Invalidate(true);
-                    Update();
+                    finally
+                    {
+                        ResumeLayout(true);
+                    }
                 }));
             }
         }
@@ -257,11 +266,6 @@ namespace CAPA_PRESENTACION
             Controls.Add(pnlMenuPagos);
 
             pnlCuerpoPagos.Resize += (sender, e) =>
-            {
-                AjustarDisenoPagos();
-            };
-
-            Resize += (sender, e) =>
             {
                 AjustarDisenoPagos();
             };
@@ -2398,19 +2402,24 @@ namespace CAPA_PRESENTACION
         {
             modoIntegradoSolicitado = true;
 
+            TopLevel = false;
             FormBorderStyle = FormBorderStyle.None;
             WindowState = FormWindowState.Normal;
             StartPosition = FormStartPosition.Manual;
 
             MinimumSize = Size.Empty;
             MaximumSize = Size.Empty;
-            AutoScaleMode = AutoScaleMode.None;
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScroll = false;
 
             Dock = DockStyle.Fill;
-            Margin = new Padding(0);
-            Padding = new Padding(0);
+            Margin = Padding.Empty;
+            Padding = Padding.Empty;
 
-            AplicarModoIntegrado();
+            if (disenoPagosInicializado)
+            {
+                AplicarModoIntegrado();
+            }
         }
 
         private void AplicarModoIntegrado()
@@ -2424,9 +2433,12 @@ namespace CAPA_PRESENTACION
             {
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Normal;
+                StartPosition = FormStartPosition.Manual;
                 MinimumSize = Size.Empty;
                 MaximumSize = Size.Empty;
-                AutoScaleMode = AutoScaleMode.None;
+                AutoScaleMode = AutoScaleMode.Dpi;
+                Margin = Padding.Empty;
+                Padding = Padding.Empty;
 
                 if (pnlMenuPagos != null)
                 {
@@ -2447,8 +2459,8 @@ namespace CAPA_PRESENTACION
                     pnlContenidoPagos.Visible = true;
                     pnlContenidoPagos.Dock = DockStyle.Fill;
                     pnlContenidoPagos.Location = Point.Empty;
-                    pnlContenidoPagos.Margin = new Padding(0);
-                    pnlContenidoPagos.Padding = new Padding(0);
+                    pnlContenidoPagos.Margin = Padding.Empty;
+                    pnlContenidoPagos.Padding = Padding.Empty;
                     pnlContenidoPagos.BringToFront();
                 }
 
@@ -2457,17 +2469,10 @@ namespace CAPA_PRESENTACION
                     pnlCuerpoPagos.Visible = true;
                     pnlCuerpoPagos.Dock = DockStyle.Fill;
                     pnlCuerpoPagos.Location = Point.Empty;
-                    pnlCuerpoPagos.Margin = new Padding(0);
+                    pnlCuerpoPagos.Margin = Padding.Empty;
                 }
 
-                PerformLayout();
-
-                if (pnlCuerpoPagos != null)
-                {
-                    AjustarDisenoPagos();
-                }
-
-                Invalidate(true);
+                AjustarDisenoPagos();
             }
             finally
             {

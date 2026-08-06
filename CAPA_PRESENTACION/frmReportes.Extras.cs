@@ -53,6 +53,7 @@ namespace CAPA_PRESENTACION
         private Button btnMenuConsultaReportes = null!;
 
         private Button btnCerrarReportes = null!;
+        private Button btnActualizarHerramienta = null!;
         private Button btnExportarPdfReporte = null!;
         private Button btnExportarExcelReporte = null!;
         private Button btnCopiarReporte = null!;
@@ -738,16 +739,14 @@ namespace CAPA_PRESENTACION
             pnlHerramientasReporte = new Panel
             {
                 Parent = pnlCabeceraReporte,
-                Size = new Size(430, 40),
+                Size = new Size(454, 40),
 
                 Anchor =
                     AnchorStyles.Top |
-                    AnchorStyles.Right,
+                    AnchorStyles.Left,
 
-                Location = new Point(
-                    pnlCabeceraReporte.Width - 450,
-                    15
-                ),
+                // Queda cerca del título y completamente visible.
+                Location = new Point(430, 15),
 
                 BackColor = Color.Transparent
             };
@@ -825,26 +824,50 @@ namespace CAPA_PRESENTACION
 
         private void ConfigurarHerramientasReporte()
         {
-            btnExportarPdfReporte = CrearBotonHerramientaReporte(
-                "Exportar PDF",
-                new Point(0, 0),
-                new Size(130, 38),
-                Color.FromArgb(154, 37, 69)
-            );
+            /*
+             * Se crea un botón exclusivo para la barra.
+             * Así no hereda posiciones ni anclajes del botón original.
+             */
+            btnActualizar.Visible = false;
 
-            btnExportarExcelReporte = CrearBotonHerramientaReporte(
-                "Exportar Excel",
-                new Point(140, 0),
-                new Size(135, 38),
-                Color.FromArgb(19, 118, 73)
-            );
+            btnActualizarHerramienta =
+                CrearBotonHerramientaReporte(
+                    "Actualizar",
+                    new Point(0, 0),
+                    new Size(100, 38),
+                    Color.FromArgb(14, 145, 155)
+                );
 
-            btnCopiarReporte = CrearBotonHerramientaReporte(
-                "Copiar",
-                new Point(285, 0),
-                new Size(110, 38),
-                Color.FromArgb(33, 80, 132)
-            );
+            btnExportarPdfReporte =
+                CrearBotonHerramientaReporte(
+                    "Exportar PDF",
+                    new Point(108, 0),
+                    new Size(115, 38),
+                    Color.FromArgb(154, 37, 69)
+                );
+
+            btnExportarExcelReporte =
+                CrearBotonHerramientaReporte(
+                    "Exportar Excel",
+                    new Point(231, 0),
+                    new Size(125, 38),
+                    Color.FromArgb(19, 118, 73)
+                );
+
+            btnCopiarReporte =
+                CrearBotonHerramientaReporte(
+                    "Copiar",
+                    new Point(364, 0),
+                    new Size(90, 38),
+                    Color.FromArgb(33, 80, 132)
+                );
+
+            btnActualizarHerramienta.Click +=
+                (sender, e) =>
+                {
+                    btnActualizar_Click(sender, e);
+                    ActualizarFechaReporte();
+                };
 
             btnExportarPdfReporte.Click +=
                 btnExportarPdfReporte_Click;
@@ -1086,6 +1109,16 @@ namespace CAPA_PRESENTACION
 
         private void ConfigurarEventosReportes()
         {
+            /*
+             * Reconecta explícitamente el evento original que genera
+             * nuevamente el contenido de txtReporte.
+             */
+            btnActualizar.Click -= btnActualizar_Click;
+            btnActualizar.Click += btnActualizar_Click;
+
+            /*
+             * Este evento adicional solo actualiza la fecha visual.
+             */
             btnActualizar.Click += (sender, e) =>
             {
                 ActualizarFechaReporte();
@@ -1093,10 +1126,7 @@ namespace CAPA_PRESENTACION
 
             pnlReportePrincipal.Resize += (sender, e) =>
             {
-                pnlHerramientasReporte.Left =
-                    pnlCabeceraReporte.ClientSize.Width -
-                    pnlHerramientasReporte.Width -
-                    20;
+                AjustarPosicionHerramientasReporte();
 
                 pnlContenedorTexto.Size =
                     new Size(
@@ -1117,11 +1147,43 @@ namespace CAPA_PRESENTACION
                     btnCerrarReportes.Width -
                     20;
 
-                btnActualizar.Left =
-                    btnCerrarReportes.Left -
-                    btnActualizar.Width -
-                    20;
+                if (btnActualizar.Parent ==
+                    pnlEncabezadoReportes)
+                {
+                    btnActualizar.Left =
+                        btnCerrarReportes.Left -
+                        btnActualizar.Width -
+                        20;
+                }
             };
+        }
+
+        private void AjustarPosicionHerramientasReporte()
+        {
+            if (pnlHerramientasReporte == null ||
+                pnlCabeceraReporte == null)
+            {
+                return;
+            }
+
+            int izquierdaDeseada = 430;
+
+            int maximoPermitido =
+                pnlCabeceraReporte.ClientSize.Width -
+                pnlHerramientasReporte.Width -
+                18;
+
+            pnlHerramientasReporte.Left =
+                Math.Max(
+                    350,
+                    Math.Min(
+                        izquierdaDeseada,
+                        maximoPermitido
+                    )
+                );
+
+            pnlHerramientasReporte.Top = 15;
+            pnlHerramientasReporte.BringToFront();
         }
 
         private void ActualizarFechaReporte()
@@ -1188,10 +1250,7 @@ namespace CAPA_PRESENTACION
                     altoPanel + (margen * 2)
                 );
 
-            pnlHerramientasReporte.Left =
-                pnlCabeceraReporte.ClientSize.Width -
-                pnlHerramientasReporte.Width -
-                20;
+            AjustarPosicionHerramientasReporte();
 
             pnlContenedorTexto.Size =
                 new Size(

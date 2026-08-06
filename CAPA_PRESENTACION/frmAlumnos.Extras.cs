@@ -69,9 +69,6 @@ namespace CAPA_PRESENTACION
         // VARIABLES DEL CORREO
         // =========================================================
 
-        private readonly IServicioCorreo servicioCorreoRegistro =
-            new ServicioCorreo();
-
         private string correoAntesDeGuardar = string.Empty;
         private string nombreAntesDeGuardar = string.Empty;
         private string apellidoAntesDeGuardar = string.Empty;
@@ -89,14 +86,7 @@ namespace CAPA_PRESENTACION
         {
             get
             {
-                CreateParams parametros = base.CreateParams;
-
-                if (!modoIntegrado)
-                {
-                    parametros.ExStyle |= 0x02000000;
-                }
-
-                return parametros;
+                return base.CreateParams;
             }
         }
 
@@ -117,26 +107,6 @@ namespace CAPA_PRESENTACION
             {
                 disenoAlumnosInicializado = true;
 
-                Shown += (sender, e) =>
-                {
-                    if (modoIntegrado)
-                    {
-                        BeginInvoke(new Action(() =>
-                        {
-                            ReajustarModoIntegradoAlMostrar();
-                        }));
-                    }
-                };
-
-                SizeChanged += (sender, e) =>
-                {
-                    if (modoIntegrado &&
-                        WindowState != FormWindowState.Minimized)
-                    {
-                        ReajustarModoIntegradoAlMostrar();
-                    }
-                };
-
                 SuspendLayout();
 
                 try
@@ -156,7 +126,6 @@ namespace CAPA_PRESENTACION
                 finally
                 {
                     ResumeLayout(true);
-                    PerformLayout();
                 }
             }
 
@@ -168,15 +137,28 @@ namespace CAPA_PRESENTACION
 
                 BeginInvoke(new Action(() =>
                 {
-                    if (modoIntegrado)
-                    {
-                        AplicarModoIntegrado();
-                    }
+                    if (IsDisposed)
+                        return;
 
-                    AjustarDisenoResponsivo();
-                    ActualizarTotalAlumnos();
-                    Invalidate(true);
-                    Update();
+                    SuspendLayout();
+
+                    try
+                    {
+                        if (modoIntegrado)
+                        {
+                            AplicarModoIntegrado();
+                        }
+                        else
+                        {
+                            AjustarDisenoResponsivo();
+                        }
+
+                        ActualizarTotalAlumnos();
+                    }
+                    finally
+                    {
+                        ResumeLayout(true);
+                    }
                 }));
             }
         }
@@ -200,6 +182,7 @@ namespace CAPA_PRESENTACION
             ConfigurarBuscador();
             ConfigurarDataGridView();
             ConfigurarEventosVisuales();
+            ConfigurarRestriccionesEntradas();
             ConfigurarCorreoRegistro();
 
             AjustarDisenoResponsivo();
@@ -1501,6 +1484,256 @@ namespace CAPA_PRESENTACION
         // CONFIGURACION DEL CORREO
         // =========================================================
 
+
+        // =========================================================
+        // RESTRICCIONES DE ENTRADA
+        // =========================================================
+
+        private bool aplicandoRestriccionEntrada;
+
+        private void ConfigurarRestriccionesEntradas()
+        {
+            txtNombre.MaxLength = 50;
+            txtApellido.MaxLength = 50;
+            txtTelefono.MaxLength = 10;
+            txtCorreo.MaxLength = 100;
+
+            txtNombre.TextChanged +=
+                (sender, e) =>
+                {
+                    FiltrarSoloLetras(
+                        txtNombre,
+                        "El nombre solo puede contener letras."
+                    );
+                };
+
+            txtApellido.TextChanged +=
+                (sender, e) =>
+                {
+                    FiltrarSoloLetras(
+                        txtApellido,
+                        "El apellido solo puede contener letras."
+                    );
+                };
+
+            txtTelefono.TextChanged +=
+                (sender, e) =>
+                {
+                    FiltrarSoloNumeros(
+                        txtTelefono,
+                        "El teléfono solo puede contener números."
+                    );
+                };
+
+            /*
+             * Sustituye únicamente la entrada a Guardar y Actualizar.
+             * La lógica original sigue estando en frmAlumnos.cs,
+             * pero ahora solo se ejecuta después de validar.
+             */
+            btnGuardar.Click -= btnGuardar_Click;
+            btnGuardar.Click += btnGuardarSeguro_Click;
+
+            btnActualizar.Click -= btnActualizar_Click;
+            btnActualizar.Click += btnActualizarSeguro_Click;
+        }
+
+        private void btnGuardarSeguro_Click(
+            object? sender,
+            EventArgs e)
+        {
+            if (!ValidarDatosAlumnoExtra())
+                return;
+
+            btnGuardar_Click(sender, e);
+        }
+
+        private void btnActualizarSeguro_Click(
+            object? sender,
+            EventArgs e)
+        {
+            if (!ValidarDatosAlumnoExtra())
+                return;
+
+            btnActualizar_Click(sender, e);
+        }
+
+        private bool ValidarDatosAlumnoExtra()
+        {
+            string nombre = txtNombre.Text.Trim();
+            string apellido = txtApellido.Text.Trim();
+            string telefono = txtTelefono.Text.Trim();
+            string correo = txtCorreo.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                return MostrarErrorYEnfocar(
+                    txtNombre,
+                    "El nombre es obligatorio."
+                );
+            }
+
+            if (!nombre.All(caracter =>
+                    char.IsLetter(caracter) ||
+                    char.IsWhiteSpace(caracter)))
+            {
+                return MostrarErrorYEnfocar(
+                    txtNombre,
+                    "El nombre solo puede contener letras."
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(apellido))
+            {
+                return MostrarErrorYEnfocar(
+                    txtApellido,
+                    "El apellido es obligatorio."
+                );
+            }
+
+            if (!apellido.All(caracter =>
+                    char.IsLetter(caracter) ||
+                    char.IsWhiteSpace(caracter)))
+            {
+                return MostrarErrorYEnfocar(
+                    txtApellido,
+                    "El apellido solo puede contener letras."
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(telefono))
+            {
+                return MostrarErrorYEnfocar(
+                    txtTelefono,
+                    "El teléfono es obligatorio."
+                );
+            }
+
+            if (!telefono.All(char.IsDigit))
+            {
+                return MostrarErrorYEnfocar(
+                    txtTelefono,
+                    "El teléfono solo puede contener números."
+                );
+            }
+
+            if (telefono.Length != 10)
+            {
+                return MostrarErrorYEnfocar(
+                    txtTelefono,
+                    "El teléfono debe contener exactamente 10 números."
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(correo))
+            {
+                return MostrarErrorYEnfocar(
+                    txtCorreo,
+                    "El correo es obligatorio."
+                );
+            }
+
+            LimpiarMensajeRestriccion();
+            return true;
+        }
+
+        private bool MostrarErrorYEnfocar(
+            Control control,
+            string mensaje)
+        {
+            MostrarMensajeRestriccion(mensaje);
+            control.Focus();
+            return false;
+        }
+
+        private void FiltrarSoloLetras(
+            TextBox caja,
+            string mensaje)
+        {
+            if (aplicandoRestriccionEntrada)
+                return;
+
+            string textoOriginal = caja.Text;
+
+            string textoFiltrado = new string(
+                textoOriginal
+                    .Where(caracter =>
+                        char.IsLetter(caracter) ||
+                        char.IsWhiteSpace(caracter))
+                    .ToArray()
+            );
+
+            if (textoOriginal == textoFiltrado)
+                return;
+
+            aplicandoRestriccionEntrada = true;
+
+            int posicionCursor = caja.SelectionStart;
+
+            caja.Text = textoFiltrado;
+            caja.SelectionStart = Math.Min(
+                posicionCursor,
+                caja.Text.Length
+            );
+
+            aplicandoRestriccionEntrada = false;
+
+            MostrarMensajeRestriccion(mensaje);
+        }
+
+        private void FiltrarSoloNumeros(
+            TextBox caja,
+            string mensaje)
+        {
+            if (aplicandoRestriccionEntrada)
+                return;
+
+            string textoOriginal = caja.Text;
+
+            string textoFiltrado = new string(
+                textoOriginal
+                    .Where(char.IsDigit)
+                    .Take(10)
+                    .ToArray()
+            );
+
+            if (textoOriginal == textoFiltrado)
+                return;
+
+            aplicandoRestriccionEntrada = true;
+
+            int posicionCursor = caja.SelectionStart;
+
+            caja.Text = textoFiltrado;
+            caja.SelectionStart = Math.Min(
+                posicionCursor,
+                caja.Text.Length
+            );
+
+            aplicandoRestriccionEntrada = false;
+
+            MostrarMensajeRestriccion(mensaje);
+        }
+
+        private void MostrarMensajeRestriccion(
+            string mensaje)
+        {
+            if (lblMensaje == null)
+                return;
+
+            lblMensaje.ForeColor =
+                Color.FromArgb(255, 105, 135);
+
+            lblMensaje.Text = mensaje;
+        }
+
+        private void LimpiarMensajeRestriccion()
+        {
+            if (lblMensaje == null)
+                return;
+
+            lblMensaje.Text = string.Empty;
+        }
+
         private void ConfigurarCorreoRegistro()
         {
             /*
@@ -1625,10 +1858,10 @@ namespace CAPA_PRESENTACION
                 try
                 {
                     await servicioCorreoRegistro
-                        .EnviarRegistroExitosoAsync(
-                            correoAntesDeGuardar,
-                            nombreCompleto
-                        );
+                    .EnviarRegistroExitosoAsync(
+                   correoAntesDeGuardar,
+                    nombreCompleto
+                       );
 
                     MessageBox.Show(
                         "La confirmacion de registro fue enviada a:\r\n\r\n" +
@@ -1736,46 +1969,29 @@ namespace CAPA_PRESENTACION
         // EVENTOS VISUALES
         // =========================================================
 
+        private bool ajustandoLayoutAlumnos;
+
         private void ConfigurarEventosVisuales()
         {
-            pnlFormulario.Resize += (sender, e) =>
+            pnlCuerpo.Resize += (sender, e) =>
             {
-                if (modoIntegrado)
+                if (ajustandoLayoutAlumnos ||
+                    !IsHandleCreated ||
+                    WindowState == FormWindowState.Minimized)
                 {
-                    AjustarBotonesPrincipalesIntegrados();
-
-                    pnlAccionesPrincipales.Top =
-                        pnlFormulario.ClientSize.Height -
-                        pnlAccionesPrincipales.Height -
-                        18;
+                    return;
                 }
 
-                RedondearControl(
-                    pnlFormulario,
-                    18
-                );
-            };
+                ajustandoLayoutAlumnos = true;
 
-            pnlLista.Resize += (sender, e) =>
-            {
-                AjustarNuevoJuntoAlBuscador();
-
-                pnlAccionesAlumno.Width =
-                    pnlCabeceraLista.ClientSize.Width - 40;
-
-                pnlContenedorGrid.Size =
-                    new Size(
-                        pnlLista.ClientSize.Width - 32,
-                        pnlLista.ClientSize.Height - 168
-                    );
-
-                lblTotalAlumnos.Top =
-                    pnlLista.ClientSize.Height - 32;
-
-                RedondearControl(
-                    pnlLista,
-                    18
-                );
+                try
+                {
+                    AjustarDisenoResponsivo();
+                }
+                finally
+                {
+                    ajustandoLayoutAlumnos = false;
+                }
             };
 
             dgvAlumnos.DataSourceChanged +=
@@ -2558,10 +2774,7 @@ namespace CAPA_PRESENTACION
                     pnlCuerpo.Padding = new Padding(18);
                 }
 
-                PerformLayout();
                 AjustarDisenoResponsivo();
-
-                Invalidate(true);
             }
             finally
             {

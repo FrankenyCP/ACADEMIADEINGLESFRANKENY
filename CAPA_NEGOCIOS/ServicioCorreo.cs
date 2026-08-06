@@ -1,480 +1,255 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
+﻿using System;
+using System.Net;
+using System.Net.Mail;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CAPA_NEGOCIOS
 {
-    public class ServicioCorreo : IServicioCorreo
+    public sealed class ServicioCorreo
     {
-        private readonly string correoRemitente;
-        private readonly string claveAplicacion;
+        private const string ServidorSmtp =
+            "smtp.gmail.com";
 
-       public ServicioCorreo()
-{
-    correoRemitente =
-        Environment.GetEnvironmentVariable(
-            "LEXBRIDGE_CORREO",
-            EnvironmentVariableTarget.User
-        )
-        ??
-        Environment.GetEnvironmentVariable(
-            "LEXBRIDGE_CORREO",
-            EnvironmentVariableTarget.Machine
-        )
-        ??
-        string.Empty;
+        private const int PuertoSmtp = 587;
 
-    claveAplicacion =
-        Environment.GetEnvironmentVariable(
-            "LEXBRIDGE_CLAVE_CORREO",
-            EnvironmentVariableTarget.User
-        )
-        ??
-        Environment.GetEnvironmentVariable(
-            "LEXBRIDGE_CLAVE_CORREO",
-            EnvironmentVariableTarget.Machine
-        )
-        ??
-        string.Empty;
-}
-        public async Task EnviarRegistroExitosoAsync(
-            string correoDestino,
-            string nombreAlumno)
+        public async Task EnviarCorreoAsync(
+            string destinatario,
+            string asunto,
+            string contenidoHtml)
         {
-            ValidarConfiguracion();
-
-            if (string.IsNullOrWhiteSpace(correoDestino))
+            if (string.IsNullOrWhiteSpace(destinatario))
             {
                 throw new ArgumentException(
-                    "El alumno no tiene un correo registrado."
+                    "El destinatario no tiene un correo válido.",
+                    nameof(destinatario)
                 );
             }
 
-            MimeMessage mensaje = new MimeMessage();
+            string correoEmisor =
+                Environment.GetEnvironmentVariable(
+                    "LEXBRIDGE_CORREO",
+                    EnvironmentVariableTarget.User
+                ) ?? string.Empty;
 
-            mensaje.From.Add(
-                new MailboxAddress(
-                    "Lexbridge No Reply",
-                    correoRemitente
-                )
-            );
+            string claveAplicacion =
+                Environment.GetEnvironmentVariable(
+                    "LEXBRIDGE_CLAVE_CORREO",
+                    EnvironmentVariableTarget.User
+                ) ?? string.Empty;
 
-            mensaje.To.Add(
-                MailboxAddress.Parse(correoDestino)
-            );
-
-            mensaje.Subject =
-                "Registro exitoso en Lexbridge";
-
-            BodyBuilder contenido = new BodyBuilder
+            if (string.IsNullOrWhiteSpace(correoEmisor) ||
+                string.IsNullOrWhiteSpace(claveAplicacion))
             {
-                HtmlBody = ConstruirCorreoRegistro(
-                    nombreAlumno
-                ),
-
-                TextBody =
-                    "Hola " + nombreAlumno + ".\r\n\r\n" +
-                    "Su registro en Lexbridge se completó correctamente.\r\n" +
-                    "Ya forma parte de nuestra academia de inglés.\r\n\r\n" +
-                    "Este es un mensaje automático. No responda a este correo. Gracias, " +
-                    "Lexbridge Academy" +
-                    ""
-            };
-
-            mensaje.Body = contenido.ToMessageBody();
-
-            await EnviarAsync(mensaje);
-        }
-
-        public async Task EnviarConfirmacionPagoAsync(
-            string correoDestino,
-            string nombreAlumno,
-            decimal monto,
-            DateTime fechaPago,
-            string metodoPago)
-        {
-            ValidarConfiguracion();
-
-            if (string.IsNullOrWhiteSpace(correoDestino))
-            {
-                throw new ArgumentException(
-                    "El alumno no tiene un correo registrado."
+                throw new InvalidOperationException(
+                    "Las variables LEXBRIDGE_CORREO y " +
+                    "LEXBRIDGE_CLAVE_CORREO no están configuradas."
                 );
             }
 
-            MimeMessage mensaje = new MimeMessage();
+            using MailMessage mensaje =
+                new MailMessage();
 
-            mensaje.From.Add(
-                new MailboxAddress(
-                    "Lexbridge No Reply",
-                    correoRemitente
-                )
+            mensaje.From = new MailAddress(
+                correoEmisor,
+                "Lexbridge"
             );
 
-            mensaje.To.Add(
-                MailboxAddress.Parse(correoDestino)
-            );
+            mensaje.To.Add(destinatario.Trim());
+            mensaje.Subject = asunto;
+            mensaje.Body = contenidoHtml;
+            mensaje.IsBodyHtml = true;
+            mensaje.BodyEncoding = Encoding.UTF8;
+            mensaje.SubjectEncoding = Encoding.UTF8;
 
-            mensaje.Subject =
-                "Confirmación de pago - Lexbridge";
-
-            BodyBuilder contenido = new BodyBuilder
-            {
-                HtmlBody = ConstruirCorreoPago(
-                    nombreAlumno,
-                    monto,
-                    fechaPago,
-                    metodoPago
-                ),
-
-                TextBody =
-                    "Hola " + nombreAlumno + ".\r\n\r\n" +
-                    "Tu pago fue registrado correctamente.\r\n" +
-                    "Monto: RD$" + monto.ToString("N2") + "\r\n" +
-                    "Fecha: " + fechaPago.ToString("dd/MM/yyyy") + "\r\n" +
-                    "Método: " + metodoPago + "\r\n\r\n" +
-                    "Este es un mensaje automático."
-            };
-
-            mensaje.Body = contenido.ToMessageBody();
-
-            await EnviarAsync(mensaje);
-        }
-
-        private async Task EnviarAsync(
-            MimeMessage mensaje)
-        {
-            using SmtpClient cliente = new SmtpClient();
-
-            try
-            {
-                await cliente.ConnectAsync(
-                    "smtp.gmail.com",
-                    587,
-                    SecureSocketOptions.StartTls
+            using SmtpClient cliente =
+                new SmtpClient(
+                    ServidorSmtp,
+                    PuertoSmtp
                 );
 
-                await cliente.AuthenticateAsync(
-                    correoRemitente,
+            cliente.EnableSsl = true;
+            cliente.UseDefaultCredentials = false;
+
+            cliente.Credentials =
+                new NetworkCredential(
+                    correoEmisor,
                     claveAplicacion
                 );
 
-                await cliente.SendAsync(mensaje);
-
-                await cliente.DisconnectAsync(true);
-            }
-            catch
-            {
-                if (cliente.IsConnected)
-                {
-                    await cliente.DisconnectAsync(true);
-                }
-
-                throw;
-            }
+            await cliente.SendMailAsync(mensaje);
         }
 
-        private void ValidarConfiguracion()
+        public async Task EnviarRegistroExitosoAsync(
+            string destinatario,
+            string nombreCompleto)
         {
-            if (string.IsNullOrWhiteSpace(correoRemitente))
-            {
-                throw new InvalidOperationException(
-                    "No se configuró la variable LEXBRIDGE_CORREO."
-                );
-            }
+            string nombreSeguro =
+                string.IsNullOrWhiteSpace(nombreCompleto)
+                    ? "Estudiante"
+                    : nombreCompleto.Trim();
 
-            if (string.IsNullOrWhiteSpace(claveAplicacion))
-            {
-                throw new InvalidOperationException(
-                    "No se configuró la variable LEXBRIDGE_CLAVE_CORREO."
-                );
-            }
-        }
+            string asunto =
+                "Registro exitoso - Lexbridge";
 
-        private static string ConstruirCorreoRegistro(
-            string nombreAlumno)
-        {
-            return $@"
+            string mensajeHtml = $@"
 <!DOCTYPE html>
-<html>
+<html lang='es'>
 <head>
     <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
+<body style='margin:0; padding:0; background-color:#071739; font-family:Segoe UI, Arial, sans-serif;'>
+    <table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background-color:#071739; padding:30px 12px;'>
+        <tr>
+            <td align='center'>
+                <table role='presentation' width='600' cellspacing='0' cellpadding='0' border='0' style='max-width:600px; width:100%; background-color:#0B1F4A; border-radius:16px; overflow:hidden; border:1px solid #213E75;'>
+                    <tr>
+                        <td style='background:linear-gradient(90deg,#0B1F4A,#3D176E); padding:28px 30px; text-align:center;'>
+                            <div style='font-size:28px; font-weight:700; color:#FFFFFF; letter-spacing:1px;'>LEXBRIDGE</div>
+                            <div style='font-size:13px; color:#B9C8E8; margin-top:6px;'>ACADEMIA DE INGLÉS</div>
+                        </td>
+                    </tr>
 
-<body style='
-    margin:0;
-    padding:0;
-    background-color:#071739;
-    font-family:Segoe UI, Arial, sans-serif;
-'>
+                    <tr>
+                        <td style='padding:34px 34px 18px 34px;'>
+                            <div style='font-size:24px; font-weight:700; color:#FFBE2E; margin-bottom:18px;'>
+                                ¡Registro completado!
+                            </div>
 
-    <div style='
-        max-width:620px;
-        margin:30px auto;
-        background-color:#0D2249;
-        border-radius:16px;
-        overflow:hidden;
-        border:1px solid #253F76;
-    '>
+                            <p style='font-size:16px; line-height:1.7; color:#E7EEF9; margin:0 0 16px 0;'>
+                                Hola <strong>{WebUtility.HtmlEncode(nombreSeguro)}</strong>,
+                            </p>
 
-        <div style='
-            padding:28px;
-            text-align:center;
-            background:linear-gradient(
-                90deg,
-                #071B46,
-                #54208F
-            );
-        '>
+                            <p style='font-size:16px; line-height:1.7; color:#D7E2F5; margin:0 0 16px 0;'>
+                                Tu registro en Lexbridge fue completado correctamente.
+                            </p>
 
-            <h1 style='
-                margin:0;
-                color:#FFFFFF;
-                font-size:28px;
-            '>
-                LEXBRIDGE
-            </h1>
+                            <div style='background-color:#102A5C; border-left:4px solid #19C7B5; padding:16px 18px; border-radius:10px; margin:22px 0;'>
+                                <div style='font-size:15px; color:#FFFFFF; font-weight:600;'>
+                                    Bienvenido a la Academia de Inglés Lexbridge.
+                                </div>
+                                <div style='font-size:14px; color:#BFCDE8; margin-top:6px;'>
+                                    Tu información ya se encuentra registrada en nuestro sistema.
+                                </div>
+                            </div>
 
-            <p style='
-                margin:7px 0 0;
-                color:#C0CAE0;
-            '>
-                Academia de Inglés
-            </p>
+                            <p style='font-size:15px; line-height:1.7; color:#BFCDE8; margin:0;'>
+                                Si necesitas asistencia, comunícate con la administración de la academia.
+                            </p>
+                        </td>
+                    </tr>
 
-        </div>
-
-        <div style='padding:34px;'>
-
-            <h2 style='
-                margin-top:0;
-                color:#FFBC24;
-            '>
-                Registro completado
-            </h2>
-
-            <p style='
-                color:#E4EAF5;
-                font-size:16px;
-            '>
-                Hola, <strong>{nombreAlumno}</strong>.
-            </p>
-
-            <p style='
-                color:#C7D2E6;
-                font-size:15px;
-                line-height:1.7;
-            '>
-                Tu registro en Lexbridge se completó
-                correctamente. Ya formas parte de nuestra
-                academia de inglés.
-            </p>
-
-            <div style='
-                margin:25px 0;
-                padding:18px;
-                background-color:#071739;
-                border-left:4px solid #20C9B5;
-                border-radius:8px;
-            '>
-
-                <p style='
-                    margin:0;
-                    color:#FFFFFF;
-                    font-size:15px;
-                '>
-                    Próximo paso: seleccionar tu nivel,
-                    instructor y completar la matrícula.
-                </p>
-
-            </div>
-
-            <p style='
-                color:#AAB8D2;
-                font-size:14px;
-                line-height:1.6;
-            '>
-                Gracias por elegir Lexbridge para continuar
-                tu aprendizaje.
-            </p>
-
-        </div>
-
-        <div style='
-            padding:19px;
-            text-align:center;
-            background-color:#071739;
-            color:#8798B8;
-            font-size:12px;
-        '>
-            Este es un mensaje automático.
-            Por favor, no respondas a este correo.
-        </div>
-
-    </div>
-
+                    <tr>
+                        <td style='padding:18px 34px 34px 34px;'>
+                            <div style='border-top:1px solid #294779; padding-top:20px; color:#9FB2D6; font-size:13px; line-height:1.6;'>
+                                Atentamente,<br>
+                                <strong style='color:#FFFFFF;'>Academia de Inglés Lexbridge</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>";
+
+            await EnviarCorreoAsync(
+                destinatario,
+                asunto,
+                mensajeHtml
+            );
         }
 
-        private static string ConstruirCorreoPago(
+        public async Task EnviarCancelacionMatriculaAsync(
+            string destinatario,
             string nombreAlumno,
-            decimal monto,
-            DateTime fechaPago,
-            string metodoPago)
+            string nombreNivel)
         {
-            return $@"
+            string nombreSeguro =
+                string.IsNullOrWhiteSpace(nombreAlumno)
+                    ? "Estudiante"
+                    : nombreAlumno.Trim();
+
+            string nivelSeguro =
+                string.IsNullOrWhiteSpace(nombreNivel)
+                    ? "el nivel registrado"
+                    : nombreNivel.Trim();
+
+            string asunto =
+                "Cancelación de matrícula - Lexbridge";
+
+            string mensajeHtml = $@"
 <!DOCTYPE html>
-<html>
+<html lang='es'>
 <head>
     <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
+<body style='margin:0; padding:0; background-color:#071739; font-family:Segoe UI, Arial, sans-serif;'>
+    <table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background-color:#071739; padding:30px 12px;'>
+        <tr>
+            <td align='center'>
+                <table role='presentation' width='600' cellspacing='0' cellpadding='0' border='0' style='max-width:600px; width:100%; background-color:#0B1F4A; border-radius:16px; overflow:hidden; border:1px solid #213E75;'>
+                    <tr>
+                        <td style='background:linear-gradient(90deg,#0B1F4A,#3D176E); padding:28px 30px; text-align:center;'>
+                            <div style='font-size:28px; font-weight:700; color:#FFFFFF; letter-spacing:1px;'>LEXBRIDGE</div>
+                            <div style='font-size:13px; color:#B9C8E8; margin-top:6px;'>ACADEMIA DE INGLÉS</div>
+                        </td>
+                    </tr>
 
-<body style='
-    margin:0;
-    padding:0;
-    background-color:#071739;
-    font-family:Segoe UI, Arial, sans-serif;
-'>
+                    <tr>
+                        <td style='padding:34px 34px 18px 34px;'>
+                            <div style='font-size:24px; font-weight:700; color:#FFBE2E; margin-bottom:18px;'>
+                                Matrícula cancelada
+                            </div>
 
-    <div style='
-        max-width:620px;
-        margin:30px auto;
-        background-color:#0D2249;
-        border-radius:16px;
-        overflow:hidden;
-        border:1px solid #253F76;
-    '>
+                            <p style='font-size:16px; line-height:1.7; color:#E7EEF9; margin:0 0 16px 0;'>
+                                Hola <strong>{WebUtility.HtmlEncode(nombreSeguro)}</strong>,
+                            </p>
 
-        <div style='
-            padding:28px;
-            text-align:center;
-            background:linear-gradient(
-                90deg,
-                #071B46,
-                #54208F
-            );
-        '>
+                            <p style='font-size:16px; line-height:1.7; color:#D7E2F5; margin:0 0 16px 0;'>
+                                Te informamos que tu matrícula en
+                                <strong style='color:#FFFFFF;'>{WebUtility.HtmlEncode(nivelSeguro)}</strong>
+                                ha sido cancelada en el sistema de Lexbridge.
+                            </p>
 
-            <h1 style='
-                margin:0;
-                color:#FFFFFF;
-                font-size:28px;
-            '>
-                LEXBRIDGE
-            </h1>
+                            <div style='background-color:#32152C; border-left:4px solid #E73C72; padding:16px 18px; border-radius:10px; margin:22px 0;'>
+                                <div style='font-size:15px; color:#FFFFFF; font-weight:600;'>
+                                    Esta matrícula ya no aparece como activa.
+                                </div>
+                                <div style='font-size:14px; color:#E9BED0; margin-top:6px;'>
+                                    El resto de tu información permanece registrada según corresponda.
+                                </div>
+                            </div>
 
-            <p style='
-                margin:7px 0 0;
-                color:#C0CAE0;
-            '>
-                Confirmación de pago
-            </p>
+                            <p style='font-size:15px; line-height:1.7; color:#BFCDE8; margin:0;'>
+                                Si consideras que se trata de un error, comunícate con la administración de la academia.
+                            </p>
+                        </td>
+                    </tr>
 
-        </div>
-
-        <div style='padding:34px;'>
-
-            <h2 style='
-                margin-top:0;
-                color:#20C9B5;
-            '>
-                Pago registrado correctamente
-            </h2>
-
-            <p style='color:#E4EAF5;'>
-                Hola, <strong>{nombreAlumno}</strong>.
-            </p>
-
-            <p style='
-                color:#C7D2E6;
-                line-height:1.7;
-            '>
-                Hemos registrado tu pago con la siguiente
-                información:
-            </p>
-
-            <table style='
-                width:100%;
-                border-collapse:collapse;
-                margin-top:20px;
-            '>
-
-                <tr>
-                    <td style='
-                        padding:13px;
-                        color:#A9B7D1;
-                        border-bottom:1px solid #2A4479;
-                    '>
-                        Monto
-                    </td>
-
-                    <td style='
-                        padding:13px;
-                        text-align:right;
-                        color:#48D89F;
-                        font-weight:bold;
-                        border-bottom:1px solid #2A4479;
-                    '>
-                        RD${monto:N2}
-                    </td>
-                </tr>
-
-                <tr>
-                    <td style='
-                        padding:13px;
-                        color:#A9B7D1;
-                        border-bottom:1px solid #2A4479;
-                    '>
-                        Fecha
-                    </td>
-
-                    <td style='
-                        padding:13px;
-                        text-align:right;
-                        color:#FFFFFF;
-                        border-bottom:1px solid #2A4479;
-                    '>
-                        {fechaPago:dd/MM/yyyy}
-                    </td>
-                </tr>
-
-                <tr>
-                    <td style='
-                        padding:13px;
-                        color:#A9B7D1;
-                    '>
-                        Método
-                    </td>
-
-                    <td style='
-                        padding:13px;
-                        text-align:right;
-                        color:#FFFFFF;
-                    '>
-                        {metodoPago}
-                    </td>
-                </tr>
-
-            </table>
-
-        </div>
-
-        <div style='
-            padding:19px;
-            text-align:center;
-            background-color:#071739;
-            color:#8798B8;
-            font-size:12px;
-        '>
-            Este es un mensaje automático.
-            Por favor, no respondas a este correo.
-        </div>
-
-    </div>
-
+                    <tr>
+                        <td style='padding:18px 34px 34px 34px;'>
+                            <div style='border-top:1px solid #294779; padding-top:20px; color:#9FB2D6; font-size:13px; line-height:1.6;'>
+                                Atentamente,<br>
+                                <strong style='color:#FFFFFF;'>Academia de Inglés Lexbridge</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>";
+
+            await EnviarCorreoAsync(
+                destinatario,
+                asunto,
+                mensajeHtml
+            );
         }
     }
 }
