@@ -1,9 +1,14 @@
-﻿using System;
+﻿using CAPA_DATOS;
+using CAPA_NEGOCIOS;
+using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CAPA_PRESENTACION
@@ -74,6 +79,15 @@ namespace CAPA_PRESENTACION
         private Button btnCerrarFormularioPagos = null!;
         private Button btnMostrarDatosBanco = null!;
 
+        private readonly ServicioCorreo servicioCorreoPago =
+            new ServicioCorreo();
+
+        private readonly AlumnoCD alumnoCDCorreoPago =
+            new AlumnoCD();
+
+        private bool correoPagoConfigurado;
+        private bool procesandoCorreoPago;
+
         // =========================================================
         // REDUCIR PARPADEO
         // =========================================================
@@ -82,7 +96,9 @@ namespace CAPA_PRESENTACION
         {
             get
             {
-                return base.CreateParams;
+                CreateParams parametros = base.CreateParams;
+                parametros.ExStyle |= 0x02000000;
+                return parametros;
             }
         }
 
@@ -112,9 +128,9 @@ namespace CAPA_PRESENTACION
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        "Error al preparar el formulario:\r\n" +
+                        "Error al preparar el diseno de pagos:\r\n" +
                         ex.Message,
-                        "Gestión de Pagos",
+                        "Gestion de Pagos",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
@@ -122,6 +138,7 @@ namespace CAPA_PRESENTACION
                 finally
                 {
                     ResumeLayout(true);
+                    PerformLayout();
                 }
             }
 
@@ -133,27 +150,15 @@ namespace CAPA_PRESENTACION
 
                 BeginInvoke(new Action(() =>
                 {
-                    if (IsDisposed)
-                        return;
+                    AjustarDisenoPagos();
 
-                    SuspendLayout();
-
-                    try
+                    if (modoIntegradoSolicitado)
                     {
-                        if (modoIntegradoSolicitado)
-                        {
-                            AplicarModoIntegrado();
-                        }
-                        else
-                        {
-                            AjustarDisenoPagos();
-                        }
-                        ActualizarResumenPagos();
+                        AplicarModoIntegrado();
                     }
-                    finally
-                    {
-                        ResumeLayout(true);
-                    }
+                    ActualizarResumenPagos();
+                    Invalidate(true);
+                    Update();
                 }));
             }
         }
@@ -173,6 +178,7 @@ namespace CAPA_PRESENTACION
 
             ConfigurarCamposPago();
             ConfigurarBotonesPago();
+            ConfigurarCorreoConfirmacionPago();
             ConfigurarHerramientasPagos();
             ConfigurarBuscadorPagos();
             ConfigurarGridPagos();
@@ -266,6 +272,11 @@ namespace CAPA_PRESENTACION
             Controls.Add(pnlMenuPagos);
 
             pnlCuerpoPagos.Resize += (sender, e) =>
+            {
+                AjustarDisenoPagos();
+            };
+
+            Resize += (sender, e) =>
             {
                 AjustarDisenoPagos();
             };
@@ -1919,6 +1930,325 @@ namespace CAPA_PRESENTACION
                 );
         }
 
+
+        // =========================================================
+        // CORREO DE CONFIRMACION DE PAGO
+        // =========================================================
+
+        private void ConfigurarCorreoConfirmacionPago()
+        {
+            if (correoPagoConfigurado)
+                return;
+
+            correoPagoConfigurado = true;
+
+            btnGuardar.Click -= btnGuardar_Click;
+            btnGuardar.Click -= btnGuardarPagoConCorreo_Click;
+            btnGuardar.Click += btnGuardarPagoConCorreo_Click;
+        }
+
+        private async void btnGuardarPagoConCorreo_Click(
+            object? sender,
+            EventArgs e)
+        {
+            if (procesandoCorreoPago)
+                return;
+
+            procesandoCorreoPago = true;
+
+            int idMatricula = 0;
+            decimal monto = 0M;
+            DateTime fechaPago = dtpFechaPago.Value;
+            string metodoPago =
+                cmbMetodoPago.SelectedItem?.ToString()
+                ?? string.Empty;
+
+            string nombreAlumno = string.Empty;
+            string correoAlumno = string.Empty;
+            string nivelAlumno = string.Empty;
+            string codigoMatricula = string.Empty;
+
+            int cantidadPagosAntes = 0;
+
+            try
+            {
+                if (cmbMatricula.SelectedValue != null)
+                {
+                    int.TryParse(
+                        cmbMatricula.SelectedValue.ToString(),
+                        out idMatricula
+                    );
+                }
+
+                decimal.TryParse(
+                    txtMonto.Text.Trim(),
+                    out monto
+                );
+
+                if (idMatricula > 0)
+                {
+                    cantidadPagosAntes =
+                        pagoCD.ObtenerPorMatricula(
+                            idMatricula
+                        ).Count;
+
+                    ObtenerDatosReciboPago(
+                        idMatricula,
+                        ref nombreAlumno,
+                        ref correoAlumno,
+                        ref nivelAlumno,
+                        ref codigoMatricula
+                    );
+                }
+
+                btnGuardar_Click(sender!, e);
+
+                if (idMatricula <= 0 || monto <= 0M)
+                    return;
+
+                int cantidadPagosDespues =
+                    pagoCD.ObtenerPorMatricula(
+                        idMatricula
+                    ).Count;
+
+                if (cantidadPagosDespues <= cantidadPagosAntes)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(correoAlumno))
+                {
+                    MessageBox.Show(
+                        "El pago fue registrado, pero el alumno no " +
+                        "tiene un correo guardado para enviar el recibo.",
+                        "Recibo no enviado",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+
+                    return;
+                }
+
+                try
+                {
+                    await servicioCorreoPago
+                        .EnviarConfirmacionPagoAsync(
+                            correoAlumno,
+                            nombreAlumno,
+                            codigoMatricula,
+                            nivelAlumno,
+                            fechaPago,
+                            monto,
+                            metodoPago
+                        );
+
+                    MessageBox.Show(
+                        "El recibo de confirmacion fue enviado a:\r\n\r\n" +
+                        correoAlumno,
+                        "Recibo enviado",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+                catch (Exception exCorreo)
+                {
+                    MessageBox.Show(
+                        "El pago fue registrado correctamente, pero " +
+                        "no se pudo enviar el recibo.\r\n\r\n" +
+                        "Motivo: " + exCorreo.Message,
+                        "Recibo no enviado",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No se pudo preparar el recibo del pago:\r\n" +
+                    ex.Message,
+                    "Confirmacion de pago",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+            finally
+            {
+                procesandoCorreoPago = false;
+            }
+        }
+
+        private void ObtenerDatosReciboPago(
+            int idMatricula,
+            ref string nombreAlumno,
+            ref string correoAlumno,
+            ref string nivelAlumno,
+            ref string codigoMatricula)
+        {
+            object? matriculas =
+                matriculaCD.ObtenerTodos();
+
+            if (matriculas is not IEnumerable listaMatriculas)
+                return;
+
+            int idAlumno = 0;
+
+            foreach (object? matricula in listaMatriculas)
+            {
+                if (matricula == null)
+                    continue;
+
+                int idActual =
+                    ObtenerEnteroPropiedadPago(
+                        matricula,
+                        "IdMatricula"
+                    );
+
+                if (idActual != idMatricula)
+                    continue;
+
+                idAlumno =
+                    ObtenerEnteroPropiedadPago(
+                        matricula,
+                        "IdAlumno"
+                    );
+
+                nombreAlumno =
+                    ObtenerTextoPropiedadPago(
+                        matricula,
+                        "NombreAlumno",
+                        "Alumno",
+                        "Nombre"
+                    );
+
+                correoAlumno =
+                    ObtenerTextoPropiedadPago(
+                        matricula,
+                        "CorreoAlumno",
+                        "Correo",
+                        "Email"
+                    );
+
+                nivelAlumno =
+                    ObtenerTextoPropiedadPago(
+                        matricula,
+                        "NombreNivel",
+                        "Nivel"
+                    );
+
+                codigoMatricula =
+                    idMatricula.ToString();
+
+                break;
+            }
+
+            if (idAlumno <= 0)
+                return;
+
+            object? alumnos =
+                alumnoCDCorreoPago.ObtenerTodos();
+
+            if (alumnos is not IEnumerable listaAlumnos)
+                return;
+
+            foreach (object? alumno in listaAlumnos)
+            {
+                if (alumno == null)
+                    continue;
+
+                int idActual =
+                    ObtenerEnteroPropiedadPago(
+                        alumno,
+                        "IdAlumno"
+                    );
+
+                if (idActual != idAlumno)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(nombreAlumno))
+                {
+                    string nombre =
+                        ObtenerTextoPropiedadPago(
+                            alumno,
+                            "Nombre"
+                        );
+
+                    string apellido =
+                        ObtenerTextoPropiedadPago(
+                            alumno,
+                            "Apellido"
+                        );
+
+                    nombreAlumno =
+                        (nombre + " " + apellido).Trim();
+                }
+
+                if (string.IsNullOrWhiteSpace(correoAlumno))
+                {
+                    correoAlumno =
+                        ObtenerTextoPropiedadPago(
+                            alumno,
+                            "Correo",
+                            "Email"
+                        );
+                }
+
+                break;
+            }
+        }
+
+        private static int ObtenerEnteroPropiedadPago(
+            object objeto,
+            string nombre)
+        {
+            PropertyInfo? propiedad =
+                objeto.GetType().GetProperty(
+                    nombre,
+                    BindingFlags.Public |
+                    BindingFlags.Instance |
+                    BindingFlags.IgnoreCase
+                );
+
+            if (propiedad == null)
+                return 0;
+
+            return int.TryParse(
+                propiedad.GetValue(objeto)?
+                    .ToString(),
+                out int valor
+            )
+                ? valor
+                : 0;
+        }
+
+        private static string ObtenerTextoPropiedadPago(
+            object objeto,
+            params string[] nombres)
+        {
+            foreach (string nombre in nombres)
+            {
+                PropertyInfo? propiedad =
+                    objeto.GetType().GetProperty(
+                        nombre,
+                        BindingFlags.Public |
+                        BindingFlags.Instance |
+                        BindingFlags.IgnoreCase
+                    );
+
+                if (propiedad == null)
+                    continue;
+
+                string valor =
+                    propiedad.GetValue(objeto)?
+                        .ToString()?
+                        .Trim()
+                    ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(valor))
+                    return valor;
+            }
+
+            return string.Empty;
+        }
+
         // =========================================================
         // EVENTOS VISUALES
         // =========================================================
@@ -2402,24 +2732,19 @@ namespace CAPA_PRESENTACION
         {
             modoIntegradoSolicitado = true;
 
-            TopLevel = false;
             FormBorderStyle = FormBorderStyle.None;
             WindowState = FormWindowState.Normal;
             StartPosition = FormStartPosition.Manual;
 
             MinimumSize = Size.Empty;
             MaximumSize = Size.Empty;
-            AutoScaleMode = AutoScaleMode.Dpi;
-            AutoScroll = false;
+            AutoScaleMode = AutoScaleMode.None;
 
             Dock = DockStyle.Fill;
-            Margin = Padding.Empty;
-            Padding = Padding.Empty;
+            Margin = new Padding(0);
+            Padding = new Padding(0);
 
-            if (disenoPagosInicializado)
-            {
-                AplicarModoIntegrado();
-            }
+            AplicarModoIntegrado();
         }
 
         private void AplicarModoIntegrado()
@@ -2433,12 +2758,9 @@ namespace CAPA_PRESENTACION
             {
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Normal;
-                StartPosition = FormStartPosition.Manual;
                 MinimumSize = Size.Empty;
                 MaximumSize = Size.Empty;
-                AutoScaleMode = AutoScaleMode.Dpi;
-                Margin = Padding.Empty;
-                Padding = Padding.Empty;
+                AutoScaleMode = AutoScaleMode.None;
 
                 if (pnlMenuPagos != null)
                 {
@@ -2459,8 +2781,8 @@ namespace CAPA_PRESENTACION
                     pnlContenidoPagos.Visible = true;
                     pnlContenidoPagos.Dock = DockStyle.Fill;
                     pnlContenidoPagos.Location = Point.Empty;
-                    pnlContenidoPagos.Margin = Padding.Empty;
-                    pnlContenidoPagos.Padding = Padding.Empty;
+                    pnlContenidoPagos.Margin = new Padding(0);
+                    pnlContenidoPagos.Padding = new Padding(0);
                     pnlContenidoPagos.BringToFront();
                 }
 
@@ -2469,10 +2791,17 @@ namespace CAPA_PRESENTACION
                     pnlCuerpoPagos.Visible = true;
                     pnlCuerpoPagos.Dock = DockStyle.Fill;
                     pnlCuerpoPagos.Location = Point.Empty;
-                    pnlCuerpoPagos.Margin = Padding.Empty;
+                    pnlCuerpoPagos.Margin = new Padding(0);
                 }
 
-                AjustarDisenoPagos();
+                PerformLayout();
+
+                if (pnlCuerpoPagos != null)
+                {
+                    AjustarDisenoPagos();
+                }
+
+                Invalidate(true);
             }
             finally
             {

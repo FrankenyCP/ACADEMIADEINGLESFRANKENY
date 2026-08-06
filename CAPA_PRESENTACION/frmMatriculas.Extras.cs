@@ -70,6 +70,7 @@ namespace CAPA_PRESENTACION
             new ServicioCorreo();
 
         private bool eliminacionCorreoConfigurada;
+        private bool actualizandoDatosMatricula;
 
         // =========================================================
         // REDUCIR PARPADEO
@@ -166,6 +167,7 @@ namespace CAPA_PRESENTACION
             ConfigurarControlesFormulario();
             ConfigurarBotonesAccion();
             ConfigurarEliminacionMatriculaConCorreo();
+
             ConfigurarBuscador();
             ConfigurarDataGridView();
             ConfigurarEventosVisuales();
@@ -1595,13 +1597,14 @@ namespace CAPA_PRESENTACION
             eliminacionCorreoConfigurada = true;
 
             /*
-             * Se vuelven a conectar explícitamente todos los botones.
-             * Esto no modifica frmMatriculas.cs y evita que queden
-             * sin evento al usar el formulario incrustado.
+             * Se conectan una sola vez los eventos definitivos.
+             * El botón Nuevo actualiza los ComboBox antes de habilitar
+             * el formulario, evitando depender de VisibleChanged.
              */
 
             btnNuevo.Click -= btnNuevo_Click;
-            btnNuevo.Click += btnNuevo_Click;
+            btnNuevo.Click -= btnNuevoConActualizacion_Click;
+            btnNuevo.Click += btnNuevoConActualizacion_Click;
 
             btnGuardar.Click -= btnGuardar_Click;
             btnGuardar.Click += btnGuardar_Click;
@@ -1618,6 +1621,65 @@ namespace CAPA_PRESENTACION
 
             dgvMatriculas.SelectionChanged +=
                 dgvMatriculas_SelectionChanged;
+        }
+
+        private async void btnNuevoConActualizacion_Click(
+            object? sender,
+            EventArgs e)
+        {
+            if (actualizandoDatosMatricula)
+                return;
+
+            actualizandoDatosMatricula = true;
+            btnNuevo.Enabled = false;
+
+            try
+            {
+                lblEstado.Text =
+                    "Actualizando alumnos, niveles e instructores...";
+
+                lblEstado.ForeColor =
+                    Color.Orange;
+
+                await CargarCombosAsync();
+
+                fuenteOriginalMatriculas =
+                    dgvMatriculas.DataSource;
+
+                /*
+                 * Ejecuta la lógica original de frmMatriculas.cs:
+                 * habilita campos y prepara una matrícula nueva.
+                 */
+                btnNuevo_Click(sender!, e);
+
+                lblEstado.Text =
+                    "Datos actualizados. Puede registrar la matrícula.";
+
+                lblEstado.ForeColor =
+                    Color.Green;
+            }
+            catch (Exception ex)
+            {
+                lblEstado.Text =
+                    "No se pudieron actualizar los datos";
+
+                lblEstado.ForeColor =
+                    Color.Red;
+
+                MessageBox.Show(
+                    "No se pudieron actualizar los alumnos, " +
+                    "niveles e instructores:\r\n\r\n" +
+                    ex.Message,
+                    "Matrículas",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+            finally
+            {
+                btnNuevo.Enabled = true;
+                actualizandoDatosMatricula = false;
+            }
         }
 
         private async void btnEliminarConCorreo_Click(

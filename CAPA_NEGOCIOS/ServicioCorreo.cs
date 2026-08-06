@@ -251,5 +251,113 @@ namespace CAPA_NEGOCIOS
                 mensajeHtml
             );
         }
+        public async Task EnviarConfirmacionPagoAsync(
+            string destinatario,
+            string nombreAlumno,
+            string codigoMatricula,
+            string nombreNivel,
+            DateTime fechaPago,
+            decimal monto,
+            string metodoPago)
+        {
+            string nombreSeguro =
+                string.IsNullOrWhiteSpace(nombreAlumno)
+                    ? "Estudiante"
+                    : nombreAlumno.Trim();
+
+            string matriculaSegura =
+                string.IsNullOrWhiteSpace(codigoMatricula)
+                    ? "No disponible"
+                    : codigoMatricula.Trim();
+
+            string nivelSeguro =
+                string.IsNullOrWhiteSpace(nombreNivel)
+                    ? "No especificado"
+                    : nombreNivel.Trim();
+
+            string metodoSeguro =
+                string.IsNullOrWhiteSpace(metodoPago)
+                    ? "No especificado"
+                    : metodoPago.Trim();
+
+            string asunto =
+                "Recibo de pago - Lexbridge";
+
+            string mensajeHtml = $@"
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+</head>
+<body style='margin:0; padding:0; background-color:#071739; font-family:Segoe UI, Arial, sans-serif;'>
+    <table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background-color:#071739; padding:30px 12px;'>
+        <tr>
+            <td align='center'>
+                <table role='presentation' width='600' cellspacing='0' cellpadding='0' border='0' style='max-width:600px; width:100%; background-color:#0B1F4A; border-radius:16px; overflow:hidden; border:1px solid #213E75;'>
+                    <tr>
+                        <td style='background:linear-gradient(90deg,#0B1F4A,#3D176E); padding:28px 30px; text-align:center;'>
+                            <div style='font-size:28px; font-weight:700; color:#FFFFFF; letter-spacing:1px;'>LEXBRIDGE</div>
+                            <div style='font-size:13px; color:#B9C8E8; margin-top:6px;'>RECIBO DE PAGO</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='padding:32px 34px 18px 34px;'>
+                            <div style='font-size:23px; font-weight:700; color:#FFBE2E; margin-bottom:16px;'>Pago confirmado</div>
+                            <p style='font-size:16px; line-height:1.7; color:#E7EEF9; margin:0 0 18px 0;'>
+                                Hola <strong>{WebUtility.HtmlEncode(nombreSeguro)}</strong>,
+                            </p>
+                            <p style='font-size:15px; line-height:1.7; color:#D7E2F5; margin:0 0 20px 0;'>
+                                Hemos registrado correctamente tu pago en el sistema de Lexbridge.
+                            </p>
+                            <table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background-color:#102A5C; border-radius:12px; overflow:hidden;'>
+                                <tr>
+                                    <td style='padding:14px 18px; color:#AFC0DF; border-bottom:1px solid #294779;'>Matricula</td>
+                                    <td align='right' style='padding:14px 18px; color:#FFFFFF; font-weight:600; border-bottom:1px solid #294779;'>{WebUtility.HtmlEncode(matriculaSegura)}</td>
+                                </tr>
+                                <tr>
+                                    <td style='padding:14px 18px; color:#AFC0DF; border-bottom:1px solid #294779;'>Nivel</td>
+                                    <td align='right' style='padding:14px 18px; color:#FFFFFF; font-weight:600; border-bottom:1px solid #294779;'>{WebUtility.HtmlEncode(nivelSeguro)}</td>
+                                </tr>
+                                <tr>
+                                    <td style='padding:14px 18px; color:#AFC0DF; border-bottom:1px solid #294779;'>Fecha</td>
+                                    <td align='right' style='padding:14px 18px; color:#FFFFFF; font-weight:600; border-bottom:1px solid #294779;'>{fechaPago:dd/MM/yyyy}</td>
+                                </tr>
+                                <tr>
+                                    <td style='padding:14px 18px; color:#AFC0DF; border-bottom:1px solid #294779;'>Metodo</td>
+                                    <td align='right' style='padding:14px 18px; color:#FFFFFF; font-weight:600; border-bottom:1px solid #294779;'>{WebUtility.HtmlEncode(metodoSeguro)}</td>
+                                </tr>
+                                <tr>
+                                    <td style='padding:16px 18px; color:#AFC0DF;'>Monto pagado</td>
+                                    <td align='right' style='padding:16px 18px; color:#31D3C2; font-size:20px; font-weight:700;'>RD${monto:N2}</td>
+                                </tr>
+                            </table>
+                            <div style='background-color:#123B45; border-left:4px solid #19C7B5; padding:15px 17px; border-radius:10px; margin-top:22px; color:#D9F8F4; font-size:14px;'>
+                                Conserva este mensaje como comprobante de la operacion.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='padding:18px 34px 34px 34px;'>
+                            <div style='border-top:1px solid #294779; padding-top:20px; color:#9FB2D6; font-size:13px;'>
+                                Atentamente,<br>
+                                <strong style='color:#FFFFFF;'>Academia de Ingles Lexbridge</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>";
+
+            await EnviarCorreoAsync(
+                destinatario,
+                asunto,
+                mensajeHtml
+            );
+        }
+
     }
 }
