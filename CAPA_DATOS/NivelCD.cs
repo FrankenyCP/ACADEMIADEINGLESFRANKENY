@@ -2,31 +2,27 @@
 
 namespace CAPA_DATOS;
 
-//TODO: Entidad/DTO que representa un registro de la tabla NIVELES.
+// TODO: Encapsulacion - Atributos privados con propiedades públicas (get/set), representa un registro de la tabla NIVELES
+// TODO: Arquitectura en Capas - Clase de entidad (modelo) perteneciente a CAPA_DATOS
 public class _Nivel
 {
-    //TODO: Variables privadas que guardan el valor real de cada propiedad.
     private int idNivel;
     private string nombreNivel;
     private int duracionMeses;
     private decimal costo;
 
-    //TODO: Propiedad Id -> identificador único del nivel en la tabla NIVELES.
     public int IdNivel { get => idNivel; set => idNivel = value; }
-    //TODO: Propiedad NombreNivel -> nombre del nivel (ej: "Básico 1", "Intermedio").
     public string NombreNivel { get => nombreNivel; set => nombreNivel = value; }
-    //TODO: Propiedad DuracionMeses -> cuántos meses dura el nivel. Debe ser > 0.
     public int DuracionMeses { get => duracionMeses; set => duracionMeses = value; }
-    //TODO: Propiedad Costo -> precio del nivel en la moneda del sistema. Debe ser > 0.
     public decimal Costo { get => costo; set => costo = value; }
 
-    //TODO: Constructor vacío. Inicializa el string para evitar valores null.
+    // TODO: Clases creadas según su uso, sin código ajeno - Constructor vacío, evita valores null al instanciar el objeto antes de llenarlo
     public _Nivel()
     {
         this.nombreNivel = string.Empty;
     }
 
-    //TODO: Constructor con todos los campos, útil al leer filas desde la base de datos.
+    // TODO: Clases creadas según su uso, sin código ajeno - Constructor sobrecargado, útil al leer una fila completa desde la base de datos
     public _Nivel(int idNivel, string nombreNivel, int duracionMeses, decimal costo)
     {
         this.idNivel = idNivel;
@@ -36,27 +32,29 @@ public class _Nivel
     }
 }
 
-//TODO: Clase de acceso a datos (Capa Datos) para la tabla NIVELES.
-//TODO: Implementa ICrudAsync<_Nivel> -> obliga a tener las 4 operaciones async.
+// TODO: Arquitectura en Capas - Clase perteneciente a CAPA_DATOS, encargada exclusivamente del acceso a datos de la tabla NIVELES
+// TODO: Interfaces Y Asincrónicos - Implementa la interfaz genérica ICrudAsync<_Nivel>, obliga a definir las operaciones asíncronas Insertar, Actualizar, Eliminar y ObtenerTodos
+// TODO: Clases creadas según su uso, sin código ajeno - Clase dedicada únicamente a las operaciones CRUD del nivel, sin lógica de negocio ni de presentación
 public class NivelCD : ICrudAsync<_Nivel>
 {
     // ===================== MÉTODOS SÍNCRONOS ORIGINALES (sin cambios) =====================
-    //TODO: Métodos originales del proyecto, se dejaron intactos para no romper nada.
+    // Métodos originales del proyecto, se dejaron intactos para no romper nada.
 
-    //TODO: Inserta un nivel de forma síncrona.
+    // TODO: Conexión a datos - Abre conexión a SQL Server mediante la clase Conexion para insertar un nuevo nivel
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que inserta un registro en la tabla NIVELES
     public bool Insertar(_Nivel n)
     {
-        //TODO: "using" abre conexión/comando y los libera automáticamente al salir del bloque.
+        // "using" abre conexión/comando y los libera automáticamente al salir del bloque.
         using (var con = Conexion.ObtenerConexion())
         using (var cmd = new SqlCommand(
             @"INSERT INTO NIVELES (NOMBRENIVEL, DURACIONMESES, COSTO)
               VALUES (@nombre, @duracion, @costo)", con))
         {
-            //TODO: Parámetros -> evitan inyección SQL.
+            // Parámetros -> evitan inyección SQL.
             cmd.Parameters.AddWithValue("@nombre", n.NombreNivel);
             cmd.Parameters.AddWithValue("@duracion", n.DuracionMeses);
             cmd.Parameters.AddWithValue("@costo", n.Costo);
-            //TODO: ExecuteNonQuery -> ejecuta el INSERT y devuelve cuántas filas se afectaron.
+            // ExecuteNonQuery -> ejecuta el INSERT y devuelve cuántas filas se afectaron.
             int filas = cmd.ExecuteNonQuery();
             if (filas > 0)
                 return true;
@@ -65,19 +63,20 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
-    //TODO: Trae todos los niveles de forma síncrona.
+    // TODO: Conexión a datos - Abre conexión a SQL Server para leer todos los registros de la tabla NIVELES
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que retorna la lista completa de niveles
     public List<_Nivel> ObtenerTodos()
     {
-        //TODO: Lista vacía donde se acumulan los niveles leídos.
+        // Lista vacía donde se acumulan los niveles leídos.
         var lista = new List<_Nivel>();
         using (var con = Conexion.ObtenerConexion())
         using (var cmd = new SqlCommand("SELECT * FROM NIVELES", con))
-        //TODO: ExecuteReader -> ejecuta el SELECT y da un cursor para leer fila por fila.
+        // ExecuteReader -> ejecuta el SELECT y da un cursor para leer fila por fila.
         using (var reader = cmd.ExecuteReader())
         {
             while (reader.Read())
             {
-                //TODO: Se arma un objeto _Nivel por cada fila leída (mapeo columna -> propiedad).
+                // Se arma un objeto _Nivel por cada fila leída (mapeo columna -> propiedad).
                 _Nivel n = new _Nivel();
                 n.IdNivel = reader.GetInt32(0);
                 n.NombreNivel = reader.GetString(1);
@@ -89,7 +88,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         return lista;
     }
 
-    //TODO: Actualiza (edita) un nivel existente de forma síncrona.
+    // TODO: Conexión a datos - Abre conexión a SQL Server para actualizar los datos de un nivel existente
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que ejecuta el UPDATE sobre la tabla NIVELES
     public bool Actualizar(_Nivel n)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -109,7 +109,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
-    //TODO: Elimina un nivel por id de forma síncrona.
+    // TODO: Conexión a datos - Abre conexión a SQL Server para eliminar un nivel por su Id
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que ejecuta el DELETE sobre la tabla NIVELES
     public bool Eliminar(int idNivel)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -125,7 +126,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
-    //TODO: Cuenta cuántos niveles hay en total (versión síncrona original).
+    // TODO: Conexión a datos - Abre conexión a SQL Server para contar cuántos niveles hay en total (versión síncrona)
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono que usa ExecuteScalar porque retorna un único valor
     public int ContarNiveles()
     {
         using (var con = Conexion.ObtenerConexion())
@@ -136,9 +138,10 @@ public class NivelCD : ICrudAsync<_Nivel>
     }
 
     // ===================== NUEVO: VERSIONES ASYNC (ICrudAsync<_Nivel>) =====================
-    //TODO: A partir de aquí, los métodos NUEVOS: versión async de cada operación.
+    // A partir de aquí, los métodos NUEVOS: versión async de cada operación.
 
-    //TODO: Versión async de ObtenerTodos(). La usa el formulario al abrir (Load).
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona de la obtención de todos los registros, exigida por la interfaz ICrudAsync<_Nivel>
+    // TODO: Llamadas asíncronas - Usa ExecuteReaderAsync y ReadAsync para leer los resultados sin bloquear el hilo de la interfaz gráfica; se ejecuta al cargar (Load) el formulario
     public async Task<List<_Nivel>> ObtenerTodosAsync()
     {
         var lista = new List<_Nivel>();
@@ -159,7 +162,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         return lista;
     }
 
-    //TODO: Versión async de Insertar(). La usa btnGuardar_Click en frmNiveles.
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método de inserción exigido por la interfaz ICrudAsync<_Nivel>
+    // TODO: Llamadas asíncronas - await espera la respuesta de la base de datos sin bloquear el hilo de la UI; la usa btnGuardar_Click en frmNiveles
     public async Task<bool> InsertarAsync(_Nivel n)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -175,8 +179,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
-    //TODO: Versión async de Actualizar(). Nombre "EditarAsync" porque así lo pide
-    //TODO: la interfaz ICrudAsync<T>. La usa btnActualizar_Click en frmNiveles.
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método de actualización, nombrado EditarAsync porque así lo exige la interfaz ICrudAsync<T>
+    // TODO: Llamadas asíncronas - Ejecuta el UPDATE de forma asíncrona; la usa btnActualizar_Click en frmNiveles
     public async Task<bool> EditarAsync(_Nivel n)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -193,7 +197,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
-    //TODO: Versión async de Eliminar(). La usa btnEliminar_Click en frmNiveles.
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método de eliminación exigido por la interfaz ICrudAsync<_Nivel>
+    // TODO: Llamadas asíncronas - Ejecuta el DELETE de forma asíncrona; la usa btnEliminar_Click en frmNiveles
     public async Task<bool> EliminarAsync(int id)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -206,9 +211,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
-    //TODO: Chequeo de duplicados (Requisito 4 de tu prompt).
-    //TODO: Busca si YA existe un nivel con el mismo nombre.
-    //TODO: idExcluir sirve para que, al EDITAR, no se compare el registro consigo mismo.
+    // TODO: Llamadas asíncronas - Método asíncrono de validación que evita insertar/editar niveles con el mismo nombre
+    // TODO: Conexión a datos - Excluye el propio Id (idExcluir) para que la validación no choque consigo mismo al editar
     public async Task<bool> ExisteNivelAsync(string nombreNivel, int idExcluir = 0)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -223,8 +227,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
-    //TODO: Búsqueda (Requisito 1 de tu prompt: "Buscar").
-    //TODO: Filtra por nombre de nivel usando LIKE '%texto%'.
+    // TODO: Llamadas asíncronas - Método asíncrono de búsqueda usado por la opción Consulta, filtra por nombre de nivel
+    // TODO: Conexión a datos - Usa el operador LIKE con parámetro ('%texto%') para evitar inyección SQL en la búsqueda
     public async Task<List<_Nivel>> BuscarAsync(string texto)
     {
         var lista = new List<_Nivel>();
@@ -249,8 +253,8 @@ public class NivelCD : ICrudAsync<_Nivel>
         return lista;
     }
 
-    //TODO: Versión async de ContarNiveles(). Se usa junto con ObtenerTodosAsync()
-    //TODO: dentro de un Task.WhenAll(...) al cargar el formulario (Requisito 7).
+    // TODO: Llamadas asíncronas - Cuenta cuántos niveles hay en total; se combina con ObtenerTodosAsync() dentro de un Task.WhenAll(...) al cargar el formulario
+    // TODO: Conexión a datos - Usa ExecuteScalarAsync porque la consulta retorna un único valor (COUNT)
     public async Task<int> ContarNivelesAsync()
     {
         using (var con = Conexion.ObtenerConexion())
@@ -260,6 +264,7 @@ public class NivelCD : ICrudAsync<_Nivel>
         }
     }
 
+    // TODO: Interfaces Y Asincrónicos - Miembro exigido por ICrudAsync<_Nivel> pero no utilizado en este módulo (se usa EditarAsync en su lugar); se deja implementado con excepción para cumplir el contrato de la interfaz sin alterar el resto del código
     public Task<bool> ActualizarAsync(_Nivel entidad)
     {
         throw new NotImplementedException();

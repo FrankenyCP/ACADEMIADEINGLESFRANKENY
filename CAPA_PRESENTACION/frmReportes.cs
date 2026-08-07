@@ -3,6 +3,8 @@ using CAPA_NEGOCIOS;
 
 namespace CAPA_PRESENTACION
 {
+    // TODO: Arquitectura en Capas - Formulario perteneciente a CAPA_PRESENTACION, es la opción de "consulta" que ofrece una vista general del sistema
+    // TODO: Opción consulta - Permite dar un vistazo a los datos ya guardados en forma de resumen (totales de alumnos, niveles, instructores, matrículas e ingresos)
     public partial class frmReportes : Form
     {
         public frmReportes()
@@ -10,6 +12,7 @@ namespace CAPA_PRESENTACION
             InitializeComponent();
         }
 
+        // TODO: Captura de error (try-catch) - Envuelve la carga inicial del reporte en try-catch para evitar el cierre forzado de la aplicación
         private void frmReportes_Load(object sender, EventArgs e)
         {
             try
@@ -23,6 +26,9 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Arquitectura en Capas - Consulta varias clases de CAPA_DATOS (AlumnoCD, NivelCD, InstructorCD, MatriculaCD, PagoCD) para construir el resumen general del sistema
+        // TODO: Clases y herencia - Instancia un objeto CicloAcademico (CAPA_NEGOCIOS) para mostrar el resumen del ciclo académico vigente y si está activo
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método privado que arma el texto completo del reporte combinando datos de varias entidades
         private void CargarReporte()
         {
             AlumnoCD alumnoCD = new AlumnoCD();
@@ -57,6 +63,8 @@ namespace CAPA_PRESENTACION
                 "Ciclo activo: " + (ciclo.EstaActivo() ? "Sí" : "No");
         }
 
+        // TODO: Opción consulta - Botón que refresca el reporte con los datos más recientes de la base de datos, sin permitir modificarlos
+        // TODO: Captura de error (try-catch) - Envuelve la actualización del reporte en try-catch para evitar el cierre forzado de la aplicación
         private void btnActualizar_Click(object sender, EventArgs e)
         {
             try

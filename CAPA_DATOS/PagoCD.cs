@@ -2,6 +2,8 @@ using Microsoft.Data.SqlClient;
 
 namespace CAPA_DATOS;
 
+// TODO: Encapsulacion - Atributos privados con propiedades públicas (get/set), representa un registro de la tabla PAGOS
+// TODO: Arquitectura en Capas - Clase de entidad (modelo) perteneciente a CAPA_DATOS
 public class _Pago
 {
     private int idPago;
@@ -16,15 +18,17 @@ public class _Pago
     public decimal Monto { get => monto; set => monto = value; }
     public string MetodoPago { get => metodoPago; set => metodoPago = value; }
 
-    // Campo extra para mostrar en la grilla
+    // Campo extra para mostrar en la grilla (no viene directo de la tabla PAGOS, se llena con el JOIN)
     public string InfoMatricula { get; set; } = string.Empty;
 
+    // TODO: Clases creadas según su uso, sin código ajeno - Constructor vacío, evita valores null e inicializa la fecha con el día de hoy
     public _Pago()
     {
         this.metodoPago = string.Empty;
         this.fechaPago = DateTime.Today;
     }
 
+    // TODO: Clases creadas según su uso, sin código ajeno - Constructor sobrecargado, útil al leer una fila completa desde la base de datos
     public _Pago(int idPago, int idMatricula, DateTime fechaPago,
                  decimal monto, string metodoPago)
     {
@@ -36,8 +40,12 @@ public class _Pago
     }
 }
 
+// TODO: Arquitectura en Capas - Clase perteneciente a CAPA_DATOS, encargada exclusivamente del acceso a datos de la tabla PAGOS
+// TODO: Clases creadas según su uso, sin código ajeno - Clase dedicada únicamente a las operaciones sobre pagos, sin lógica de negocio ni de presentación
 public class PagoCD
 {
+    // TODO: Conexión a datos - Abre conexión a SQL Server mediante la clase Conexion para insertar un nuevo pago
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que inserta un registro en la tabla PAGOS
     public bool Insertar(_Pago p)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -57,6 +65,8 @@ public class PagoCD
         }
     }
 
+    // TODO: Conexión a datos - Consulta a SQL Server usando INNER JOIN para traer la información del alumno y nivel asociados a cada pago
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que retorna la lista completa de pagos con su información relacionada
     public List<_Pago> ObtenerTodos()
     {
         var lista = new List<_Pago>();
@@ -85,6 +95,8 @@ public class PagoCD
         return lista;
     }
 
+    // TODO: Conexión a datos - Consulta a SQL Server con INNER JOIN filtrada por el Id de matrícula, trae solo los pagos de esa matrícula
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono usado en frmPagos para mostrar el historial de pagos de una matrícula específica
     public List<_Pago> ObtenerPorMatricula(int idMatricula)
     {
         var lista = new List<_Pago>();
@@ -117,6 +129,8 @@ public class PagoCD
         return lista;
     }
 
+    // TODO: Conexión a datos - Abre conexión a SQL Server para eliminar un pago por su Id
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que ejecuta el DELETE sobre la tabla PAGOS
     public bool Eliminar(int idPago)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -132,6 +146,8 @@ public class PagoCD
         }
     }
 
+    // TODO: Conexión a datos - Consulta a SQL Server usando SUM e ISNULL para calcular el total pagado de una matrícula (evita null si no hay pagos)
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono usado en frmMatriculas/frmReportes para mostrar cuánto ha pagado el alumno
     public decimal ObtenerTotalPagado(int idMatricula)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -143,6 +159,8 @@ public class PagoCD
         }
     }
 
+    // TODO: Conexión a datos - Abre conexión a SQL Server para verificar si una matrícula tiene pagos registrados
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono de validación, se usa antes de eliminar una matrícula para respetar la integridad referencial
     public bool TienePagos(int idMatricula)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -158,6 +176,8 @@ public class PagoCD
         }
     }
 
+    // TODO: Conexión a datos - Abre conexión a SQL Server para actualizar los datos de un pago existente
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que ejecuta el UPDATE sobre la tabla PAGOS, completa el CRUD (antes solo existían Insertar, Eliminar y las lecturas)
     // TODO Actualizar: se agrega el método Actualizar para completar el CRUD de pagos.
     // Antes solo existían Insertar, Eliminar y las lecturas; faltaba el Update.
     public bool Actualizar(_Pago p)

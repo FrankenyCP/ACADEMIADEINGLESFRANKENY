@@ -2,19 +2,20 @@
 
 namespace CAPA_NEGOCIOS;
 
-// TODO: Implementación de IDashboardServicio
+// TODO: Interfaces Y Asincrónicos - Implementa la interfaz IDashboardServicio, obliga a definir todos los indicadores del Dashboard en versión asíncrona
+// TODO: Arquitectura en Capas - Clase de negocio perteneciente a CAPA_NEGOCIOS, obtiene los indicadores del Dashboard consultando CAPA_DATOS sin acceder directamente a SQL
 // Esta clase obtiene los indicadores del Dashboard consultando la base de datos
 // a través de CAPA_DATOS respetando la arquitectura en capas
 public class DashboardServicio : IDashboardServicio
 {
-    // TODO: Instancias de los DAL necesarios para obtener los indicadores
+    // TODO: Clases creadas según su uso, sin código ajeno - Instancias privadas y de solo lectura (readonly) de los DAL necesarios para obtener los indicadores
     private readonly AlumnoCD _alumnoCD;
     private readonly MatriculaCD _matriculaCD;
     private readonly InstructorCD _instructorCD;
     private readonly PagoCD _pagoCD;
     private readonly NivelCD _nivelCD;
 
-    // TODO: Constructor que inicializa todos los DAL necesarios
+    // TODO: Clases creadas según su uso, sin código ajeno - Constructor que inicializa todos los DAL necesarios para que la clase quede lista para usarse
     public DashboardServicio()
     {
         _alumnoCD = new AlumnoCD();
@@ -24,7 +25,8 @@ public class DashboardServicio : IDashboardServicio
         _nivelCD = new NivelCD();
     }
 
-    // TODO: Obtiene el total de alumnos de forma asíncrona
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ObtenerTotalAlumnosAsync exigido por IDashboardServicio
+    // TODO: Llamadas asíncronas - Usa Task.Run para ejecutar en segundo plano el conteo de alumnos sin bloquear el hilo de la interfaz gráfica
     public async Task<int> ObtenerTotalAlumnosAsync()
     {
         return await Task.Run(() =>
@@ -34,7 +36,8 @@ public class DashboardServicio : IDashboardServicio
         });
     }
 
-    // TODO: Obtiene el total de matrículas activas de forma asíncrona
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ObtenerTotalMatriculasActivasAsync exigido por IDashboardServicio
+    // TODO: Llamadas asíncronas - Usa Task.Run para ejecutar en segundo plano el conteo de matrículas sin bloquear el hilo de la interfaz gráfica
     public async Task<int> ObtenerTotalMatriculasActivasAsync()
     {
         return await Task.Run(() =>
@@ -44,7 +47,8 @@ public class DashboardServicio : IDashboardServicio
         });
     }
 
-    // TODO: Obtiene el total de instructores de forma asíncrona
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ObtenerTotalInstructoresAsync exigido por IDashboardServicio
+    // TODO: Llamadas asíncronas - Usa Task.Run para ejecutar en segundo plano el conteo de instructores sin bloquear el hilo de la interfaz gráfica
     public async Task<int> ObtenerTotalInstructoresAsync()
     {
         return await Task.Run(() =>
@@ -54,7 +58,8 @@ public class DashboardServicio : IDashboardServicio
         });
     }
 
-    // TODO: Obtiene el total de ingresos recaudados de forma asíncrona
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ObtenerTotalIngresosAsync exigido por IDashboardServicio
+    // TODO: Llamadas asíncronas - Usa Task.Run para sumar en segundo plano el monto de todos los pagos sin bloquear el hilo de la interfaz gráfica
     public async Task<decimal> ObtenerTotalIngresosAsync()
     {
         return await Task.Run(() =>
@@ -67,7 +72,8 @@ public class DashboardServicio : IDashboardServicio
         });
     }
 
-    // TODO: Obtiene el total pendiente por cobrar de forma asíncrona
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ObtenerTotalPendienteAsync exigido por IDashboardServicio
+    // TODO: Llamadas asíncronas - Usa Task.Run para calcular en segundo plano la diferencia entre el costo total de los niveles y lo pagado, sin bloquear el hilo de la interfaz gráfica
     // Calcula la diferencia entre el costo total de los niveles y lo pagado
     public async Task<decimal> ObtenerTotalPendienteAsync()
     {
@@ -97,7 +103,8 @@ public class DashboardServicio : IDashboardServicio
         });
     }
 
-    // TODO: Obtiene el nivel con más alumnos matriculados de forma asíncrona
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ObtenerNivelMasPopularAsync exigido por IDashboardServicio
+    // TODO: Llamadas asíncronas - Usa Task.Run para calcular en segundo plano cuál nivel tiene más alumnos matriculados, sin bloquear el hilo de la interfaz gráfica
     public async Task<string> ObtenerNivelMasPopularAsync()
     {
         return await Task.Run(() =>

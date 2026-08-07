@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 namespace CAPA_PRESENTACION
 {
+    // TODO: Arquitectura en Capas - Continuación parcial (partial class) de frmAlumnos, separa la lógica de negocio/eventos (frmAlumnos.cs) del diseño visual construido por código (este archivo)
     public partial class frmAlumnos
     {
         // =========================================================
@@ -52,8 +53,10 @@ namespace CAPA_PRESENTACION
         private Label lblPieIzquierdo = null!;
         private Label lblVersion = null!;
 
+        // TODO: Logo - PictureBox donde se carga el logo de la academia (Lexbridge) dentro del menú lateral
         private PictureBox picLogoMenu = null!;
 
+        // TODO: MenuStrip u otra alternativa - Botones que actúan como alternativa al MenuStrip tradicional, forman el menú lateral con las opciones principales del sistema (Dashboard, Alumnos, Niveles, Instructores, Matrículas, Pagos, Reportes, Consulta)
         private Button btnMenuDashboard = null!;
         private Button btnMenuAlumnos = null!;
         private Button btnMenuNiveles = null!;
@@ -96,6 +99,7 @@ namespace CAPA_PRESENTACION
         // PREPARAR ANTES DE MOSTRAR
         // =========================================================
 
+        // TODO: Captura de error (try-catch) - Envuelve la inicialización y el ajuste del diseño en try-catch, evitando que un fallo al mostrar el formulario cierre la aplicación de forma forzada
         protected override void SetVisibleCore(bool value)
         {
             if (LicenseManager.UsageMode ==
@@ -154,6 +158,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Captura de error (try-catch) - Si la inicialización del diseño falla, revierte la bandera disenoAlumnosInicializado para permitir un nuevo intento, evitando dejar el formulario en un estado inconsistente
         private void InicializarAlumnosSeguro()
         {
             if (disenoAlumnosInicializado)
@@ -187,6 +192,7 @@ namespace CAPA_PRESENTACION
         // INICIALIZACION
         // =========================================================
 
+        // TODO: Clases creadas según su uso, sin código ajeno - Método orquestador que arma el diseño completo del formulario, delega cada parte a métodos específicos (menú, encabezado, formulario, lista)
         private void InicializarDisenoAlumnos()
         {
             // Configuración de doble buffer movida aquí para evitar
@@ -332,6 +338,7 @@ namespace CAPA_PRESENTACION
         // MENU LATERAL
         // =========================================================
 
+        // TODO: MenuStrip u otra alternativa - Construye el menú lateral (alternativa visual al MenuStrip) con más de cinco opciones principales: Dashboard, Alumnos, Niveles, Instructores, Matrículas, Pagos, Reportes y Consulta
         private void CrearMenuLateral()
         {
             pnlMarca = new Panel
@@ -461,6 +468,7 @@ namespace CAPA_PRESENTACION
                 VolverAlDashboard();
             };
 
+            // TODO: Opción de entrada - Navegación desde el menú lateral hacia los formularios que permiten agregar datos (Alumnos, Niveles, Instructores, Matrículas, Pagos)
             btnMenuAlumnos.Click += (sender, e) =>
             {
                 btnNuevo.PerformClick();
@@ -491,6 +499,7 @@ namespace CAPA_PRESENTACION
                 AbrirFormulario(new frmReportes());
             };
 
+            // TODO: Opción consulta - Navegación desde el menú lateral hacia el formulario que permite dar un vistazo a los datos ya guardados (frmConsultaMatriculas)
             btnMenuConsulta.Click += (sender, e) =>
             {
                 AbrirFormulario(
@@ -527,6 +536,7 @@ namespace CAPA_PRESENTACION
             };
         }
 
+        // TODO: Clases creadas según su uso, sin código ajeno - Método fábrica reutilizable que crea cada botón del menú lateral con su ícono y estado (seleccionado o no)
         private Button CrearBotonMenu(
             string texto,
             string icono,
@@ -633,6 +643,8 @@ namespace CAPA_PRESENTACION
             return boton;
         }
 
+        // TODO: Logo - Carga el logo de Lexbridge desde los recursos del proyecto y lo asigna al PictureBox del menú lateral
+        // TODO: Captura de error (try-catch) - Si el recurso del logo no existe o falla la carga, evita que la aplicación se cierre de forma forzada y deja el PictureBox sin imagen
         private void CargarLogoDesdeRecursos()
         {
             try
@@ -1330,6 +1342,7 @@ namespace CAPA_PRESENTACION
         // DATAGRIDVIEW
         // =========================================================
 
+        // TODO: Opción consulta - Configura la grilla que permite dar un vistazo a los datos ya guardados (encabezados, colores, selección de solo lectura)
         private void ConfigurarDataGridView()
         {
             dgvAlumnos.Parent = pnlContenedorGrid;
@@ -1415,6 +1428,7 @@ namespace CAPA_PRESENTACION
                 dgvAlumnos_DataBindingComplete;
         }
 
+        // TODO: Captura de error (try-catch) - Envuelve la configuración de columnas en try-catch para que un error de formato en la grilla no interrumpa el formulario
         private void dgvAlumnos_DataBindingComplete(
             object? sender,
             DataGridViewBindingCompleteEventArgs e)
@@ -1522,6 +1536,7 @@ namespace CAPA_PRESENTACION
 
         private bool aplicandoRestriccionEntrada;
 
+        // TODO: Clases creadas según su uso, sin código ajeno - Reemplaza los manejadores originales de Guardar/Actualizar por versiones "seguras" que primero validan, sin duplicar la lógica ya definida en frmAlumnos.cs
         private void ConfigurarRestriccionesEntradas()
         {
             txtNombre.MaxLength = 50;
@@ -1568,6 +1583,7 @@ namespace CAPA_PRESENTACION
             btnActualizar.Click += btnActualizarSeguro_Click;
         }
 
+        // TODO: Opción de entrada - Punto de entrada seguro que valida los datos extra antes de invocar el guardado real definido en frmAlumnos.cs
         private void btnGuardarSeguro_Click(
             object? sender,
             EventArgs e)
@@ -1588,6 +1604,7 @@ namespace CAPA_PRESENTACION
             btnActualizar_Click(sender, e);
         }
 
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método privado de validación extra (nombre, apellido, teléfono, correo) antes de permitir guardar/actualizar
         private bool ValidarDatosAlumnoExtra()
         {
             string nombre = txtNombre.Text.Trim();
@@ -1765,6 +1782,7 @@ namespace CAPA_PRESENTACION
             lblMensaje.Text = string.Empty;
         }
 
+        // TODO: Interfaces Y Asincrónicos - Conecta eventos adicionales (MouseDown, Click, KeyDown) del botón Guardar para disparar el envío de correo de confirmación tras el registro, usando ServicioCorreo (CAPA_NEGOCIOS)
         private void ConfigurarCorreoRegistro()
         {
             /*
@@ -1807,6 +1825,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Captura de error (try-catch) - Si la captura de datos previos falla, limpia las variables temporales en vez de dejar el formulario en un estado inconsistente
         private void CapturarDatosPreviosCorreo()
         {
             try
@@ -1836,6 +1855,8 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Llamadas asíncronas - Evento async void que espera (mediante EsperarRegistroAlumnoAsync) a que termine el guardado original antes de enviar el correo de confirmación con await
+        // TODO: Captura de error (try-catch) - Doble manejo de errores: uno específico para el envío de correo (no bloquea el registro ya exitoso) y otro general para la verificación completa
         private async void btnGuardar_ClickCorreoExtra(
             object? sender,
             EventArgs e)
@@ -1932,6 +1953,8 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Llamadas asíncronas - Método asíncrono que usa Task.Delay en un bucle de reintentos (polling) para esperar a que el evento async void original termine de insertar el alumno en la base de datos
+        // TODO: Captura de error (try-catch) - Ignora errores puntuales durante el sondeo, ya que la operación original todavía podría estar en curso
         private async Task<bool> EsperarRegistroAlumnoAsync()
         {
             /*
@@ -2337,6 +2360,8 @@ namespace CAPA_PRESENTACION
             Close();
         }
 
+        // TODO: Captura de error (try-catch) - Envuelve la apertura de otros formularios en try-catch para evitar el cierre forzado si la navegación falla
+        // TODO: Clases creadas según su uso, sin código ajeno - Método genérico reutilizable para abrir cualquier formulario del sistema, evitando duplicar instancias ya abiertas
         private void AbrirFormulario(
             Form formulario)
         {
@@ -2725,6 +2750,7 @@ namespace CAPA_PRESENTACION
         // *** CORRECCIÓN PRINCIPAL: MODO INTEGRADO ***
         // =========================================================
 
+        // TODO: Captura de error (try-catch) - Envuelve la preparación del modo integrado (embebido dentro de frmPrincipal) en try-catch, relanzando el error tras notificar al usuario
         public void PrepararModoIntegrado()
         {
             try
@@ -2777,6 +2803,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Arquitectura en Capas - Ajusta la interfaz cuando frmAlumnos se embebe dentro de frmPrincipal (formulario principal), ocultando el menú lateral y encabezado propios para no duplicar la navegación
         private void AplicarModoIntegrado()
         {
             if (!modoIntegrado)

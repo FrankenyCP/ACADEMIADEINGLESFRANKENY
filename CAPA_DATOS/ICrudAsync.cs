@@ -1,19 +1,20 @@
 namespace CAPA_DATOS;
 
-//TODO: Interfaz genérica de contrato CRUD asíncrono.
-//TODO: Cualquier clase de acceso a datos (InstructorCD, NivelCD, etc.)
-//TODO: que la implemente queda OBLIGADA a tener estas 4 operaciones en versión async.
+// TODO: Interfaces Y Asincrónicos - Interfaz genérica que define el contrato CRUD asíncrono para las clases de acceso a datos
+// TODO: Arquitectura en Capas - Interfaz perteneciente a CAPA_DATOS, establece el contrato que deben cumplir las clases CD (AlumnoCD, InstructorCD, NivelCD, etc.)
+// Cualquier clase de acceso a datos (InstructorCD, NivelCD, etc.)
+// que la implemente queda OBLIGADA a tener estas 4 operaciones en versión async.
 public interface ICrudAsync<T>
 {
-    //TODO: Trae todos los registros de la tabla de forma asíncrona.
+    // TODO: Interfaces Y Asincrónicos - Firma del método asíncrono que trae todos los registros de la tabla
     Task<List<T>> ObtenerTodosAsync();
 
-    //TODO: Inserta un nuevo registro de forma asíncrona. Devuelve true si se insertó.
+    // TODO: Interfaces Y Asincrónicos - Firma del método asíncrono que inserta un nuevo registro, retorna true si la operación fue exitosa
     Task<bool> InsertarAsync(T entidad);
 
-    //TODO: Edita/actualiza un registro existente de forma asíncrona. Devuelve true si se actualizó.
+    // TODO: Interfaces Y Asincrónicos - Firma del método asíncrono que edita/actualiza un registro existente, retorna true si la operación fue exitosa
     Task<bool> EditarAsync(T entidad);
 
-    //TODO: Elimina un registro por su Id de forma asíncrona. Devuelve true si se eliminó.
+    // TODO: Interfaces Y Asincrónicos - Firma del método asíncrono que elimina un registro por su Id, retorna true si la operación fue exitosa
     Task<bool> EliminarAsync(int id);
 }

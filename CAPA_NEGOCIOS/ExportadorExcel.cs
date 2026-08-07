@@ -2,10 +2,15 @@ using ClosedXML.Excel;
 
 namespace CAPA_NEGOCIOS;
 
+// TODO: Interfaces Y Asincrónicos - Implementa la interfaz iExportador, obliga a definir el método ExportarAsync de forma asíncrona
+// TODO: Arquitectura en Capas - Clase de negocio perteneciente a CAPA_NEGOCIOS, encapsula la lógica de generación de archivos Excel usada por frmPagos
 // TODO Integrante 5: implementación de IExportador para generar archivos Excel con formato profesional
 // (título combinado, columnas etiqueta/valor, bordes), usada por frmPagos.
 public class ExportadorExcel : iExportador
 {
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ExportarAsync exigido por la interfaz iExportador
+    // TODO: Llamadas asíncronas - Usa Task.Run para generar el archivo Excel en segundo plano, sin bloquear el hilo de la interfaz gráfica mientras se arma el documento
+    // TODO: Captura de error (try-catch) - Envuelve toda la generación del archivo en try-catch, evitando que un fallo de escritura (ej. archivo abierto, ruta inválida) cierre la aplicación de forma forzada
     public async Task<bool> ExportarAsync(string titulo, List<string> contenido, string rutaDestino)
     {
         try

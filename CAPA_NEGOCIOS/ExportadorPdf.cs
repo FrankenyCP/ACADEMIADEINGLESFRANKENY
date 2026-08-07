@@ -4,10 +4,15 @@ using QuestPDF.Infrastructure;
 
 namespace CAPA_NEGOCIOS;
 
+// TODO: Interfaces Y Asincrónicos - Implementa la interfaz iExportador, obliga a definir el método ExportarAsync de forma asíncrona
+// TODO: Arquitectura en Capas - Clase de negocio perteneciente a CAPA_NEGOCIOS, encapsula la lógica de generación de archivos PDF usada por frmPagos y frmReportes
 // TODO Integrante 5: implementación de IExportador para generar archivos PDF con formato profesional
 // (encabezado, pie de página, resaltado de etiquetas), usada por frmPagos y frmReportes.
 public class ExportadorPdf : iExportador
 {
+    // TODO: Interfaces Y Asincrónicos - Implementación asíncrona del método ExportarAsync exigido por la interfaz iExportador
+    // TODO: Llamadas asíncronas - Usa Task.Run para generar el documento PDF en segundo plano, sin bloquear el hilo de la interfaz gráfica mientras se arma el documento
+    // TODO: Captura de error (try-catch) - Envuelve toda la generación del archivo en try-catch, evitando que un fallo al crear el PDF (ej. ruta inválida, archivo en uso) cierre la aplicación de forma forzada
     public async Task<bool> ExportarAsync(string titulo, List<string> contenido, string rutaDestino)
     {
         try
@@ -87,4 +92,3 @@ public class ExportadorPdf : iExportador
         }
     }
 }
-

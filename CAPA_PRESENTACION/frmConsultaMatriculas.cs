@@ -3,17 +3,18 @@ using CAPA_NEGOCIOS;
 
 namespace CAPA_PRESENTACION
 {
-    // TODO: Formulario de consulta de matrículas y estado de pagos
+    // TODO: Arquitectura en Capas - Formulario perteneciente a CAPA_PRESENTACION, es la opción de "consulta" del sistema
+    // TODO: Opción consulta - Permite dar un vistazo a los datos ya guardados (matrículas y su estado de pago), sin permitir modificarlos
     // Permite buscar alumnos y ver su estado de pago con semáforo visual
     // Integrante 4 - Frankeny Castillo
     public partial class frmConsultaMatriculas : Form
     {
-        // TODO: DAL necesarios para la consulta
+        // TODO: Arquitectura en Capas - Instancias de las clases de CAPA_DATOS usadas por este formulario para acceder a la información
         private readonly MatriculaCD _matriculaCD = new MatriculaCD();
         private readonly PagoCD _pagoCD = new PagoCD();
         private readonly NivelCD _nivelCD = new NivelCD();
 
-        // TODO: Lista completa de matrículas para filtrar sin volver a consultar BD
+        // TODO: Clases creadas según su uso, sin código ajeno - Lista completa de matrículas guardada en memoria para filtrar sin volver a consultar la base de datos
         private List<_Matricula> _todasLasMatriculas = new List<_Matricula>();
 
         public frmConsultaMatriculas()
@@ -21,7 +22,8 @@ namespace CAPA_PRESENTACION
             InitializeComponent();
         }
 
-        // TODO: Al cargar el formulario se cargan todas las matrículas de forma asíncrona
+        // TODO: Llamadas asíncronas - Evento Load declarado async void, permite usar await al cargar las matrículas sin bloquear la interfaz gráfica
+        // TODO: Captura de error (try-catch) - Envuelve la carga inicial en try-catch para evitar que un fallo de conexión cierre la aplicación de forma forzada
         private async void frmConsultaMatriculas_Load(object sender, EventArgs e)
         {
             try
@@ -35,7 +37,8 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        // TODO: Carga todas las matrículas de forma asíncrona
+        // TODO: Llamadas asíncronas - Método asíncrono que usa Task.Run para traer todas las matrículas sin congelar la interfaz gráfica
+        // TODO: Opción consulta - Alimenta la grilla que permite dar un vistazo a los datos ya guardados
         private async Task CargarMatriculasAsync()
         {
             _todasLasMatriculas = await Task.Run(() => _matriculaCD.ObtenerTodos());
@@ -43,7 +46,8 @@ namespace CAPA_PRESENTACION
             LimpiarDetalle();
         }
 
-        // TODO: Busca matrículas por nombre de alumno en tiempo real
+        // TODO: Opción consulta - Filtra las matrículas ya guardadas por nombre de alumno, sin permitir editarlas
+        // TODO: Captura de error (try-catch) - Envuelve la búsqueda en try-catch para evitar el cierre forzado de la aplicación
         private void btnBuscar_Click(object sender, EventArgs e)
         {
             try
@@ -56,7 +60,7 @@ namespace CAPA_PRESENTACION
                     return;
                 }
 
-                // TODO: Filtrar la lista sin hacer otra consulta a la BD
+                // Filtrar la lista sin hacer otra consulta a la BD
                 List<_Matricula> filtradas = new List<_Matricula>();
                 for (int i = 0; i < _todasLasMatriculas.Count; i++)
                 {
@@ -74,7 +78,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        // TODO: Limpia la búsqueda y muestra todas las matrículas
+        // TODO: Opción consulta - Restaura la vista completa de matrículas ya guardadas, sin necesidad de una nueva consulta a la base de datos
         private void btnLimpiarBusqueda_Click(object sender, EventArgs e)
         {
             txtBuscar.Text = string.Empty;
@@ -82,7 +86,8 @@ namespace CAPA_PRESENTACION
             LimpiarDetalle();
         }
 
-        // TODO: Al seleccionar una fila muestra el detalle del alumno con semáforo
+        // TODO: Opción consulta - Al seleccionar una fila, muestra el detalle del alumno (solo lectura), incluyendo el estado de pago mediante semáforo visual
+        // TODO: Captura de error (try-catch) - Envuelve la lectura de la fila seleccionada y el cálculo del saldo en try-catch
         private void dgvConsulta_SelectionChanged(object sender, EventArgs e)
         {
             try
@@ -95,7 +100,7 @@ namespace CAPA_PRESENTACION
                 string nombreAlumno = fila.Cells["NombreAlumno"].Value.ToString();
                 string nombreNivel = fila.Cells["NombreNivel"].Value.ToString();
 
-                // TODO: Obtener costo del nivel
+                // Obtener costo del nivel
                 decimal costoNivel = 0;
                 List<_Nivel> niveles = _nivelCD.ObtenerTodos();
                 for (int i = 0; i < niveles.Count; i++)
@@ -107,18 +112,18 @@ namespace CAPA_PRESENTACION
                     }
                 }
 
-                // TODO: Obtener total pagado
+                // Obtener total pagado
                 decimal totalPagado = _pagoCD.ObtenerTotalPagado(idMatricula);
                 decimal saldoPendiente = costoNivel - totalPagado;
 
-                // TODO: Mostrar datos en el panel de detalle
+                // Mostrar datos en el panel de detalle
                 lblValorNombreAlumno.Text = nombreAlumno;
                 lblValorNivel.Text = nombreNivel;
                 lblValorCosto.Text = "RD$" + costoNivel.ToString("N2");
                 lblValorPagado.Text = "RD$" + totalPagado.ToString("N2");
                 lblValorPendiente.Text = "RD$" + saldoPendiente.ToString("N2");
 
-                // TODO: Semáforo de estado según el saldo pendiente
+                // Semáforo de estado según el saldo pendiente
                 // Verde = pagado completo, Amarillo = pagado parcial, Rojo = sin pagos
                 ActualizarSemaforo(totalPagado, costoNivel);
             }
@@ -129,34 +134,34 @@ namespace CAPA_PRESENTACION
             }
         }
 
-        // TODO: Actualiza el semáforo visual según el estado de pago
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método privado que calcula y aplica el color del semáforo (verde/amarillo/rojo) según el estado de pago del alumno
         // Verde = al día, Amarillo = pago parcial, Rojo = sin pagos
         private void ActualizarSemaforo(decimal totalPagado, decimal costoNivel)
         {
             if (totalPagado >= costoNivel)
             {
-                // TODO: Verde — pagado completo
+                // Verde — pagado completo
                 lblValorEstado.Text = "✅ Al día — Pago completo";
                 lblValorEstado.ForeColor = Color.FromArgb(46, 213, 115);
                 picEstado.BackColor = Color.FromArgb(46, 213, 115);
             }
             else if (totalPagado > 0)
             {
-                // TODO: Amarillo — pago parcial
+                // Amarillo — pago parcial
                 lblValorEstado.Text = "⚠️ Pago parcial — Tiene saldo pendiente";
                 lblValorEstado.ForeColor = Color.FromArgb(255, 165, 0);
                 picEstado.BackColor = Color.FromArgb(255, 165, 0);
             }
             else
             {
-                // TODO: Rojo — sin pagos
+                // Rojo — sin pagos
                 lblValorEstado.Text = "🔴 Sin pagos — Debe el total";
                 lblValorEstado.ForeColor = Color.FromArgb(192, 57, 43);
                 picEstado.BackColor = Color.FromArgb(192, 57, 43);
             }
         }
 
-        // TODO: Limpia el panel de detalle al cambiar la búsqueda
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método privado que reinicia el panel de detalle a sus valores por defecto
         private void LimpiarDetalle()
         {
             lblValorNombreAlumno.Text = "-";

@@ -3,8 +3,11 @@ using CAPA_NEGOCIOS;
 
 namespace CAPA_PRESENTACION
 {
+    // TODO: Arquitectura en Capas - Formulario perteneciente a CAPA_PRESENTACION, la opción de "entrada" para gestionar pagos
+    // TODO: Opción de entrada - Formulario donde se permiten agregar datos a la base de datos (registro y eliminación de pagos)
     public partial class frmPagos : Form
     {
+        // TODO: Arquitectura en Capas - Instancias de las clases de CAPA_DATOS usadas por este formulario para acceder a la información
         private PagoCD pagoCD = new PagoCD();
         private MatriculaCD matriculaCD = new MatriculaCD();
         private NivelCD nivelCD = new NivelCD();
@@ -15,6 +18,7 @@ namespace CAPA_PRESENTACION
             InitializeComponent();
         }
 
+        // TODO: Captura de error (try-catch) - Envuelve la carga inicial de combos y grilla en try-catch para evitar el cierre forzado de la aplicación
         private void frmPagos_Load(object sender, EventArgs e)
         {
             try
@@ -30,6 +34,8 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Conexión a datos - Consulta a MatriculaCD (CAPA_DATOS) para llenar el combo de matrículas disponibles
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono (MatriculaCD todavía no tiene versión asíncrona)
         private void CargarComboMatriculas()
         {
             cmbMatricula.DataSource = matriculaCD.ObtenerTodos();
@@ -37,6 +43,7 @@ namespace CAPA_PRESENTACION
             cmbMatricula.ValueMember = "IdMatricula";
         }
 
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método privado que llena el combo de métodos de pago con valores fijos
         private void CargarComboMetodo()
         {
             cmbMetodoPago.Items.Clear();
@@ -46,6 +53,8 @@ namespace CAPA_PRESENTACION
             cmbMetodoPago.SelectedIndex = 0;
         }
 
+        // TODO: Opción consulta - Alimenta la grilla que permite dar un vistazo a los pagos ya guardados, filtrados por la matrícula seleccionada o mostrando todos
+        // TODO: Conexión a datos - Consulta a PagoCD (CAPA_DATOS), método síncrono
         private void CargarGrilla()
         {
             if (cmbMatricula.SelectedValue != null && cmbMatricula.SelectedValue is int)
@@ -59,6 +68,7 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método privado que limpia todos los campos del formulario y reinicia el Id seleccionado
         private void LimpiarCampos()
         {
             txtMonto.Text = string.Empty;
@@ -69,6 +79,8 @@ namespace CAPA_PRESENTACION
             cmbMetodoPago.SelectedIndex = 0;
         }
 
+        // TODO: Arquitectura en Capas - Combina MatriculaCD y NivelCD (CAPA_DATOS) para determinar el costo del nivel asociado a una matrícula
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Método privado de cálculo, usado antes de registrar o evaluar un pago
         private decimal ObtenerCostoNivel(int idMatricula)
         {
             decimal costoNivel = 0;
@@ -92,6 +104,7 @@ namespace CAPA_PRESENTACION
             return costoNivel;
         }
 
+        // TODO: Opción consulta - Muestra el total pagado y el saldo restante de la matrícula seleccionada, sin permitir modificarlos directamente
         private void ActualizarSaldo()
         {
             if (cmbMatricula.SelectedValue == null || !(cmbMatricula.SelectedValue is int)) return;
@@ -107,6 +120,7 @@ namespace CAPA_PRESENTACION
             dgvPagos.DataSource = pagoCD.ObtenerPorMatricula(idMatricula);
         }
 
+        // TODO: Captura de error (try-catch) - Envuelve la actualización del saldo en try-catch para evitar el cierre forzado de la aplicación
         private void cmbMatricula_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
@@ -121,6 +135,10 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Clases y herencia - Instancia un objeto Alumno (CAPA_NEGOCIOS) para invocar RegistrarPago() y EvaluarAprobacion(), métodos propios de la subclase
+        // TODO: Arquitectura en Capas - Delega la validación de saldo y el registro del pago a la capa de negocio (Alumno.RegistrarPago) en vez de insertar directamente desde el formulario
+        // TODO: Opción de entrada - Inserta un nuevo registro de pago, validando que no exceda el saldo restante del curso
+        // TODO: Captura de error (try-catch) - Envuelve todo el proceso de guardado en try-catch para evitar el cierre forzado de la aplicación
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try
@@ -171,6 +189,8 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Opción de entrada - Elimina un registro de pago de la base de datos
+        // TODO: Captura de error (try-catch) - Envuelve todo el proceso de eliminación en try-catch para evitar el cierre forzado de la aplicación
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             try
@@ -208,6 +228,8 @@ namespace CAPA_PRESENTACION
             LimpiarCampos();
         }
 
+        // TODO: Botón habilitar campos - Al seleccionar una fila de la grilla, guarda el Id del pago seleccionado para poder eliminarlo o exportarlo
+        // TODO: Captura de error (try-catch) - Envuelve la lectura de la fila seleccionada en try-catch para evitar errores si algún dato viene inválido
         private void dgvPagos_SelectionChanged(object sender, EventArgs e)
         {
             try
@@ -225,12 +247,14 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Validación de entrada, solo permite dígitos y un punto decimal en el campo monto
         private void txtMonto_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != '.' && !char.IsControl(e.KeyChar))
                 e.Handled = true;
         }
 
+        // TODO: Métodos, métodos abstractos y métodos virtuales - Muestra u oculta el panel de datos bancarios según el método de pago seleccionado
         private void cmbMetodoPago_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbMetodoPago.SelectedItem != null &&
@@ -245,6 +269,9 @@ namespace CAPA_PRESENTACION
             pnlDatosBancarios.Visible = false;
         }
 
+        // TODO: Interfaces Y Asincrónicos - Usa la interfaz iExportador (ExportadorPdf) para exportar el pago seleccionado a PDF, sin depender de la implementación concreta
+        // TODO: Llamadas asíncronas - Evento async void que espera con await el resultado de ExportarAsync sin bloquear la interfaz gráfica
+        // TODO: Captura de error (try-catch) - Envuelve todo el proceso de exportación en try-catch para evitar el cierre forzado de la aplicación
         private async void btnExportarPDF_Click(object sender, EventArgs e)
         {
             try
@@ -294,6 +321,9 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // TODO: Interfaces Y Asincrónicos - Usa la interfaz iExportador (ExportadorExcel) para exportar el pago seleccionado a Excel, mismo contrato que ExportadorPdf pero con implementación distinta (polimorfismo)
+        // TODO: Llamadas asíncronas - Evento async void que espera con await el resultado de ExportarAsync sin bloquear la interfaz gráfica
+        // TODO: Captura de error (try-catch) - Envuelve todo el proceso de exportación en try-catch para evitar el cierre forzado de la aplicación
         private async void btn_ExportarExcelfrmPagos_Click(object sender, EventArgs e)
         {
             try
