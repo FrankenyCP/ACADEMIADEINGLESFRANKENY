@@ -71,6 +71,15 @@ namespace CAPA_PRESENTACION
 
         private bool eliminacionCorreoConfigurada;
         private bool actualizandoDatosMatricula;
+        private bool interconexionMatriculaConfigurada;
+
+        // Nueva mejora:
+        // Evita aplicar varias veces el modo integrado.
+        private bool modoIntegradoAplicado;
+
+        // Nueva mejora:
+        // Evita ejecutar ajustes responsivos al mismo tiempo.
+        private bool ajustandoDisenoMatricula;
 
         // =========================================================
         // REDUCIR PARPADEO
@@ -82,11 +91,9 @@ namespace CAPA_PRESENTACION
             {
                 CreateParams parametros = base.CreateParams;
 
-                // Evita el efecto pesado o extraño al incrustar el formulario.
-                if (!modoIntegradoSolicitado)
-                {
-                    parametros.ExStyle |= 0x02000000;
-                }
+                // Nueva mejora:
+                // Usa pintado compuesto para reducir el parpadeo.
+                parametros.ExStyle |= 0x02000000;
 
                 return parametros;
             }
@@ -104,6 +111,8 @@ namespace CAPA_PRESENTACION
                 return;
             }
 
+            // Nueva mejora:
+            // El diseno se crea una sola vez antes de mostrar el formulario.
             if (value && !disenoMatriculasInicializado)
             {
                 disenoMatriculasInicializado = true;
@@ -126,8 +135,9 @@ namespace CAPA_PRESENTACION
                 }
                 finally
                 {
-                    ResumeLayout(true);
-                    PerformLayout();
+                    // Nueva correccion:
+                    // No fuerza un repintado completo durante la carga.
+                    ResumeLayout(false);
                 }
             }
 
@@ -145,9 +155,11 @@ namespace CAPA_PRESENTACION
                     {
                         AplicarModoIntegrado();
                     }
+
                     ActualizarTotalMatriculas();
-                    Invalidate(true);
-                    Update();
+
+                    // Nueva correccion:
+                    // No se usan Invalidate ni Update porque causan destellos.
                 }));
             }
         }
@@ -263,14 +275,24 @@ namespace CAPA_PRESENTACION
             Controls.Add(pnlContenido);
             Controls.Add(pnlMenuLateral);
 
-            pnlCuerpo.Resize += (sender, e) =>
+            // Nueva mejora:
+            // Ajusta el contenido sin forzar repintados repetidos.
+            pnlCuerpo.SizeChanged += (sender, e) =>
             {
-                AjustarDisenoResponsivo();
+                if (Visible &&
+                    WindowState != FormWindowState.Minimized)
+                {
+                    AjustarDisenoResponsivo();
+                }
             };
 
-            Resize += (sender, e) =>
+            SizeChanged += (sender, e) =>
             {
-                AjustarDisenoResponsivo();
+                if (Visible &&
+                    WindowState != FormWindowState.Minimized)
+                {
+                    AjustarDisenoResponsivo();
+                }
             };
         }
 
@@ -1592,25 +1614,31 @@ namespace CAPA_PRESENTACION
         private void ConfigurarEliminacionMatriculaConCorreo()
         {
             if (eliminacionCorreoConfigurada)
+            {
                 return;
+            }
 
             eliminacionCorreoConfigurada = true;
 
             /*
              * Se conectan una sola vez los eventos definitivos.
-             * El botón Nuevo actualiza los ComboBox antes de habilitar
-             * el formulario, evitando depender de VisibleChanged.
+             * El boton Nuevo actualiza los ComboBox antes de habilitar
+             * el formulario.
              */
 
             btnNuevo.Click -= btnNuevo_Click;
             btnNuevo.Click -= btnNuevoConActualizacion_Click;
             btnNuevo.Click += btnNuevoConActualizacion_Click;
 
+            // Reconectar explícitamente los controles para que
+            // sigan funcionando al incrustar el formulario.
             btnGuardar.Click -= btnGuardar_Click;
-            btnGuardar.Click += btnGuardar_Click;
+            btnGuardar.Click -= btnGuardarMatriculaIntegrado_Click;
+            btnGuardar.Click += btnGuardarMatriculaIntegrado_Click;
 
             btnLimpiar.Click -= btnLimpiar_Click;
-            btnLimpiar.Click += btnLimpiar_Click;
+            btnLimpiar.Click -= btnLimpiarMatriculaIntegrado_Click;
+            btnLimpiar.Click += btnLimpiarMatriculaIntegrado_Click;
 
             btnEliminar.Click -= btnEliminar_Click;
             btnEliminar.Click -= btnEliminarConCorreo_Click;
@@ -1618,9 +1646,108 @@ namespace CAPA_PRESENTACION
 
             dgvMatriculas.SelectionChanged -=
                 dgvMatriculas_SelectionChanged;
-
             dgvMatriculas.SelectionChanged +=
                 dgvMatriculas_SelectionChanged;
+
+            dgvMatriculas.SelectionChanged -=
+                dgvMatriculas_SelectionChangedExtra;
+            dgvMatriculas.SelectionChanged +=
+                dgvMatriculas_SelectionChangedExtra;
+        }
+
+        private void btnGuardarMatriculaIntegrado_Click(
+            object? sender,
+            EventArgs e)
+        {
+            btnGuardar_Click(sender!, e);
+
+            if (modoIntegradoSolicitado)
+            {
+                RestaurarControlesMatriculaIntegrados();
+            }
+        }
+
+        private void btnLimpiarMatriculaIntegrado_Click(
+            object? sender,
+            EventArgs e)
+        {
+            btnLimpiar_Click(sender!, e);
+
+            if (modoIntegradoSolicitado)
+            {
+                RestaurarControlesMatriculaIntegrados();
+            }
+        }
+
+        private void dgvMatriculas_SelectionChangedExtra(
+            object? sender,
+            EventArgs e)
+        {
+            if (dgvMatriculas.SelectedRows.Count == 0)
+            {
+                btnEliminar.Enabled = false;
+                return;
+            }
+
+            DataGridViewRow fila = dgvMatriculas.SelectedRows[0];
+
+            if (fila.IsNewRow)
+                return;
+
+            try
+            {
+                if (dgvMatriculas.Columns.Contains("IdAlumno") &&
+                    fila.Cells["IdAlumno"].Value != null)
+                {
+                    cmbAlumno.SelectedValue =
+                        Convert.ToInt32(fila.Cells["IdAlumno"].Value);
+                }
+
+                if (dgvMatriculas.Columns.Contains("IdNivel") &&
+                    fila.Cells["IdNivel"].Value != null)
+                {
+                    cmbNivel.SelectedValue =
+                        Convert.ToInt32(fila.Cells["IdNivel"].Value);
+                }
+
+                if (dgvMatriculas.Columns.Contains("IdInstructor") &&
+                    fila.Cells["IdInstructor"].Value != null)
+                {
+                    cmbInstructor.SelectedValue =
+                        Convert.ToInt32(fila.Cells["IdInstructor"].Value);
+                }
+
+                if (dgvMatriculas.Columns.Contains("FechaMatricula") &&
+                    fila.Cells["FechaMatricula"].Value != null &&
+                    fila.Cells["FechaMatricula"].Value != DBNull.Value)
+                {
+                    dtpFechaMatricula.Value =
+                        Convert.ToDateTime(fila.Cells["FechaMatricula"].Value);
+                }
+
+                RestaurarControlesMatriculaIntegrados();
+                btnEliminar.Enabled = idSeleccionado > 0;
+            }
+            catch
+            {
+                // La selección original sigue funcionando aunque cambie una columna.
+            }
+        }
+
+        private void RestaurarControlesMatriculaIntegrados()
+        {
+            if (!modoIntegradoSolicitado)
+                return;
+
+            cmbAlumno.Enabled = true;
+            cmbNivel.Enabled = true;
+            cmbInstructor.Enabled = true;
+            dtpFechaMatricula.Enabled = true;
+
+            btnGuardar.Enabled = true;
+            btnLimpiar.Enabled = true;
+            btnNuevo.Enabled = true;
+            btnEliminar.Enabled = idSeleccionado > 0;
         }
 
         private async void btnNuevoConActualizacion_Click(
@@ -1829,6 +1956,11 @@ namespace CAPA_PRESENTACION
 
                 CargarGrilla();
                 LimpiarCampos();
+
+                if (modoIntegradoSolicitado)
+                {
+                    RestaurarControlesMatriculaIntegrados();
+                }
 
                 lblEstado.Text = "Listo";
                 lblEstado.ForeColor = Color.Green;
@@ -2174,6 +2306,11 @@ namespace CAPA_PRESENTACION
 
         private void AjustarDisenoResponsivo()
         {
+            if (ajustandoDisenoMatricula)
+            {
+                return;
+            }
+
             if (!disenoMatriculasInicializado ||
                 pnlCuerpo == null ||
                 pnlFormulario == null ||
@@ -2182,125 +2319,134 @@ namespace CAPA_PRESENTACION
                 return;
             }
 
-            const int margen = 18;
-            const int separacion = 18;
-            const int anchoFormulario = 350;
-            const int anchoMinimoLista = 650;
-            const int altoMinimoPaneles = 640;
+            ajustandoDisenoMatricula = true;
 
-            int anchoInterior =
-                pnlCuerpo.ClientSize.Width -
-                (margen * 2);
-
-            int anchoLista =
-                anchoInterior -
-                anchoFormulario -
-                separacion;
-
-            int altoDisponible =
-                pnlCuerpo.ClientSize.Height -
-                (margen * 2);
-
-            int altoPaneles =
-                Math.Max(
-                    altoMinimoPaneles,
-                    altoDisponible
-                );
-
-            pnlFormulario.Location =
-                new Point(margen, margen);
-
-            pnlFormulario.Size =
-                new Size(
-                    anchoFormulario,
-                    altoPaneles
-                );
-
-            pnlLista.Location =
-                new Point(
-                    margen +
-                    anchoFormulario +
-                    separacion,
-                    margen
-                );
-
-            if (anchoLista >= anchoMinimoLista)
+            try
             {
-                pnlLista.Size =
+                const int margen = 18;
+                const int separacion = 18;
+                const int anchoFormulario = 350;
+                const int anchoMinimoLista = 650;
+                const int altoMinimoPaneles = 640;
+
+                int anchoInterior =
+                    pnlCuerpo.ClientSize.Width -
+                    (margen * 2);
+
+                int anchoLista =
+                    anchoInterior -
+                    anchoFormulario -
+                    separacion;
+
+                int altoDisponible =
+                    pnlCuerpo.ClientSize.Height -
+                    (margen * 2);
+
+                int altoPaneles =
+                    Math.Max(
+                        altoMinimoPaneles,
+                        altoDisponible
+                    );
+
+                pnlFormulario.Location =
+                    new Point(margen, margen);
+
+                pnlFormulario.Size =
                     new Size(
-                        anchoLista,
+                        anchoFormulario,
                         altoPaneles
                     );
 
-                pnlCuerpo.AutoScrollMinSize =
-                    new Size(
-                        0,
-                        altoPaneles +
-                        (margen * 2)
-                    );
-            }
-            else
-            {
-                pnlLista.Size =
-                    new Size(
-                        anchoMinimoLista,
-                        altoPaneles
-                    );
-
-                pnlCuerpo.AutoScrollMinSize =
-                    new Size(
+                pnlLista.Location =
+                    new Point(
                         margen +
                         anchoFormulario +
-                        separacion +
-                        anchoMinimoLista +
-                        margen,
-
-                        altoPaneles +
-                        (margen * 2)
+                        separacion,
+                        margen
                     );
+
+                if (anchoLista >= anchoMinimoLista)
+                {
+                    pnlLista.Size =
+                        new Size(
+                            anchoLista,
+                            altoPaneles
+                        );
+
+                    pnlCuerpo.AutoScrollMinSize =
+                        new Size(
+                            0,
+                            altoPaneles +
+                            (margen * 2)
+                        );
+                }
+                else
+                {
+                    pnlLista.Size =
+                        new Size(
+                            anchoMinimoLista,
+                            altoPaneles
+                        );
+
+                    pnlCuerpo.AutoScrollMinSize =
+                        new Size(
+                            margen +
+                            anchoFormulario +
+                            separacion +
+                            anchoMinimoLista +
+                            margen,
+
+                            altoPaneles +
+                            (margen * 2)
+                        );
+                }
+
+                pnlContenedorGrid.Location =
+                    new Point(16, 78);
+
+                pnlContenedorGrid.Size =
+                    new Size(
+                        pnlLista.ClientSize.Width - 32,
+                        pnlLista.ClientSize.Height - 120
+                    );
+
+                lblTotalMatriculas.Location =
+                    new Point(
+                        20,
+                        pnlLista.ClientSize.Height - 32
+                    );
+
+                pnlBuscador.Left =
+                    pnlCabeceraLista.ClientSize.Width -
+                    pnlBuscador.Width -
+                    18;
+
+                pnlAcciones.Location =
+                    new Point(
+                        20,
+                        pnlFormulario.ClientSize.Height -
+                        pnlAcciones.Height -
+                        20
+                    );
+
+                btnCerrarVentana.Left =
+                    pnlEncabezado.ClientSize.Width -
+                    btnCerrarVentana.Width -
+                    20;
+
+                btnNuevo.Left =
+                    btnCerrarVentana.Left -
+                    btnNuevo.Width -
+                    20;
+
+                RedondearControl(pnlFormulario, 18);
+                RedondearControl(pnlLista, 18);
+                RedondearControl(pnlContenedorGrid, 12);
             }
-
-            pnlContenedorGrid.Location =
-                new Point(16, 78);
-
-            pnlContenedorGrid.Size =
-                new Size(
-                    pnlLista.ClientSize.Width - 32,
-                    pnlLista.ClientSize.Height - 120
-                );
-
-            lblTotalMatriculas.Location =
-                new Point(
-                    20,
-                    pnlLista.ClientSize.Height - 32
-                );
-
-            pnlBuscador.Left =
-                pnlCabeceraLista.ClientSize.Width -
-                pnlBuscador.Width -
-                18;
-
-            pnlAcciones.Location =
-                new Point(
-                    20,
-                    pnlFormulario.ClientSize.Height -
-                    pnlAcciones.Height -
-                    20
-                );
-
-            btnCerrarVentana.Left =
-                pnlEncabezado.ClientSize.Width -
-                btnCerrarVentana.Width -
-                20;
-
-            btnNuevo.Left =
-                btnCerrarVentana.Left -
-                btnNuevo.Width -
-                20;
-
-            RedondearControl(pnlFormulario, 18);
-            RedondearControl(pnlLista, 18);
-            RedondearControl(pnlContenedorGrid, 12);
+            finally
+            {
+                ajustandoDisenoMatricula = false;
+            }
         }
 
         // =========================================================
@@ -2564,27 +2710,14 @@ namespace CAPA_PRESENTACION
 
         public void PrepararModoIntegrado()
         {
-            modoIntegradoSolicitado = true;
-
-            FormBorderStyle = FormBorderStyle.None;
-            WindowState = FormWindowState.Normal;
-            StartPosition = FormStartPosition.Manual;
-
-            MinimumSize = Size.Empty;
-            MaximumSize = Size.Empty;
-            AutoScaleMode = AutoScaleMode.None;
-
-            Dock = DockStyle.Fill;
-            Margin = new Padding(0);
-            Padding = new Padding(0);
-
-            AplicarModoIntegrado();
-        }
-
-        private void AplicarModoIntegrado()
-        {
-            if (!modoIntegradoSolicitado)
+            // Nueva proteccion:
+            // Evita preparar dos veces el mismo formulario.
+            if (modoIntegradoSolicitado)
+            {
                 return;
+            }
+
+            modoIntegradoSolicitado = true;
 
             SuspendLayout();
 
@@ -2592,22 +2725,85 @@ namespace CAPA_PRESENTACION
             {
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Normal;
+                StartPosition = FormStartPosition.Manual;
+
                 MinimumSize = Size.Empty;
                 MaximumSize = Size.Empty;
                 AutoScaleMode = AutoScaleMode.None;
+
+                Dock = DockStyle.Fill;
+                Margin = new Padding(0);
+                Padding = new Padding(0);
+            }
+            finally
+            {
+                ResumeLayout(false);
+            }
+
+            // Nueva mejora:
+            // Solo se aplica si el diseno ya fue creado.
+            if (disenoMatriculasInicializado)
+            {
+                AplicarModoIntegrado();
+            }
+        }
+
+        private void AplicarModoIntegrado()
+        {
+            if (!modoIntegradoSolicitado)
+            {
+                return;
+            }
+
+            // Nueva proteccion:
+            // Evita repetir cambios de Dock, Visible y tamano.
+            if (modoIntegradoAplicado)
+            {
+                return;
+            }
+
+            if (!disenoMatriculasInicializado)
+            {
+                return;
+            }
+
+            modoIntegradoAplicado = true;
+
+            SuspendLayout();
+
+            if (pnlContenido != null)
+            {
+                pnlContenido.SuspendLayout();
+            }
+
+            if (pnlCuerpo != null)
+            {
+                pnlCuerpo.SuspendLayout();
+            }
+
+            try
+            {
+                FormBorderStyle = FormBorderStyle.None;
+                WindowState = FormWindowState.Normal;
+
+                MinimumSize = Size.Empty;
+                MaximumSize = Size.Empty;
+                AutoScaleMode = AutoScaleMode.None;
+
+                Dock = DockStyle.Fill;
+                Margin = new Padding(0);
+                Padding = new Padding(0);
 
                 if (pnlMenuLateral != null)
                 {
                     pnlMenuLateral.Visible = false;
                     pnlMenuLateral.Dock = DockStyle.None;
-                    pnlMenuLateral.Width = 0;
                 }
 
                 if (pnlEncabezado != null)
                 {
                     pnlEncabezado.Visible = false;
                     pnlEncabezado.Dock = DockStyle.None;
-                    pnlEncabezado.Height = 0;
                 }
 
                 if (pnlContenido != null)
@@ -2617,7 +2813,6 @@ namespace CAPA_PRESENTACION
                     pnlContenido.Location = Point.Empty;
                     pnlContenido.Margin = new Padding(0);
                     pnlContenido.Padding = new Padding(0);
-                    pnlContenido.BringToFront();
                 }
 
                 if (pnlCuerpo != null)
@@ -2627,20 +2822,25 @@ namespace CAPA_PRESENTACION
                     pnlCuerpo.Location = Point.Empty;
                     pnlCuerpo.Margin = new Padding(0);
                 }
-
-                PerformLayout();
-
-                if (pnlCuerpo != null)
-                {
-                    AjustarDisenoResponsivo();
-                }
-
-                Invalidate(true);
             }
             finally
             {
-                ResumeLayout(true);
+                if (pnlCuerpo != null)
+                {
+                    pnlCuerpo.ResumeLayout(false);
+                }
+
+                if (pnlContenido != null)
+                {
+                    pnlContenido.ResumeLayout(false);
+                }
+
+                ResumeLayout(false);
             }
+
+            // Nueva mejora:
+            // Ajusta una sola vez al terminar la integracion.
+            AjustarDisenoResponsivo();
         }
 
     }

@@ -196,6 +196,7 @@
             // 
             // dgvAlumnos
             // 
+            dgvAlumnos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             dgvAlumnos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvAlumnos.BackgroundColor = Color.FromArgb(27, 42, 74);
             dgvAlumnos.BorderStyle = BorderStyle.None;
@@ -303,7 +304,7 @@
             // txtNombre
             // 
             txtNombre.Location = new Point(84, 146);
-            txtNombre.Margin = new Padding(2, 2, 2, 2);
+            txtNombre.Margin = new Padding(2);
             txtNombre.Name = "txtNombre";
             txtNombre.Size = new Size(257, 27);
             txtNombre.TabIndex = 24;
@@ -311,7 +312,7 @@
             // txtApellido
             // 
             txtApellido.Location = new Point(84, 262);
-            txtApellido.Margin = new Padding(2, 2, 2, 2);
+            txtApellido.Margin = new Padding(2);
             txtApellido.Name = "txtApellido";
             txtApellido.Size = new Size(257, 27);
             txtApellido.TabIndex = 25;
@@ -319,7 +320,7 @@
             // txtTelefono
             // 
             txtTelefono.Location = new Point(84, 387);
-            txtTelefono.Margin = new Padding(2, 2, 2, 2);
+            txtTelefono.Margin = new Padding(2);
             txtTelefono.Name = "txtTelefono";
             txtTelefono.Size = new Size(257, 27);
             txtTelefono.TabIndex = 26;
@@ -327,7 +328,7 @@
             // txtCorreo
             // 
             txtCorreo.Location = new Point(84, 518);
-            txtCorreo.Margin = new Padding(2, 2, 2, 2);
+            txtCorreo.Margin = new Padding(2);
             txtCorreo.Name = "txtCorreo";
             txtCorreo.Size = new Size(257, 27);
             txtCorreo.TabIndex = 27;
@@ -335,7 +336,7 @@
             // dtpFechaNacimiento
             // 
             dtpFechaNacimiento.Location = new Point(84, 630);
-            dtpFechaNacimiento.Margin = new Padding(2, 2, 2, 2);
+            dtpFechaNacimiento.Margin = new Padding(2);
             dtpFechaNacimiento.Name = "dtpFechaNacimiento";
             dtpFechaNacimiento.Size = new Size(241, 27);
             dtpFechaNacimiento.TabIndex = 28;
@@ -370,6 +371,7 @@
             Controls.Add(lblApellido);
             Controls.Add(lblNombre);
             Controls.Add(lblTitulo);
+            DoubleBuffered = true;
             MaximizeBox = false;
             MinimumSize = new Size(1000, 650);
             Name = "frmAlumnos";
