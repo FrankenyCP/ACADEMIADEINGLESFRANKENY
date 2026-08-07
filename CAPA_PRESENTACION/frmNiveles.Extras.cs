@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CAPA_DATOS;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -157,6 +158,9 @@ namespace CAPA_PRESENTACION
             ConfigurarBuscador();
             ConfigurarDataGridView();
             ConfigurarEventosVisuales();
+
+            // Conecta de forma segura todos los controles funcionales.
+            ConfigurarInterconexionNiveles();
 
             AjustarDisenoResponsivo();
 
@@ -1866,6 +1870,296 @@ namespace CAPA_PRESENTACION
             finally
             {
                 ResumeLayout(true);
+            }
+        }
+
+
+        // =========================================================
+        // INTERCONEXION FUNCIONAL DE NIVELES
+        // =========================================================
+
+        private void ConfigurarInterconexionNiveles()
+        {
+            /*
+             * Reconexion explicita de eventos.
+             * Se quitan primero para evitar dobles ejecuciones si
+             * el Designer ya los habia conectado.
+             */
+
+            btnGuardar.Click -= btnGuardar_Click;
+            btnGuardar.Click += btnGuardar_Click;
+
+            btnActualizar.Click -= btnActualizar_Click;
+            btnActualizar.Click += btnActualizar_Click;
+
+            btnLimpiar.Click -= btnLimpiar_Click;
+            btnLimpiar.Click -= btnLimpiarNivelExtra_Click;
+            btnLimpiar.Click += btnLimpiarNivelExtra_Click;
+
+            btnEliminar.Click -= btnEliminar_Click;
+            btnEliminar.Click -= btnEliminarNivelProtegido_Click;
+            btnEliminar.Click += btnEliminarNivelProtegido_Click;
+
+            btnBuscar.Click -= btnBuscar_Click;
+            btnBuscar.Click += btnBuscar_Click;
+
+            dgvNiveles.SelectionChanged -= dgvNiveles_SelectionChanged;
+            dgvNiveles.SelectionChanged -= dgvNiveles_SelectionChangedExtra;
+            dgvNiveles.SelectionChanged += dgvNiveles_SelectionChangedExtra;
+
+            txtDuracion.KeyPress -= txtDuracion_KeyPress;
+            txtDuracion.KeyPress += txtDuracion_KeyPress;
+
+            txtCosto.KeyPress -= txtCosto_KeyPress;
+            txtCosto.KeyPress += txtCosto_KeyPress;
+
+            // Los campos principales siempre deben aceptar entrada.
+            HabilitarControlesNivelExtra();
+
+            // Actualizar y Eliminar solo se habilitan cuando
+            // existe una fila seleccionada.
+            btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
+
+            if (txtNombreNivel != null)
+            {
+                txtNombreNivel.ReadOnly = false;
+            }
+
+            if (txtDuracion != null)
+            {
+                txtDuracion.ReadOnly = false;
+            }
+
+            if (txtCosto != null)
+            {
+                txtCosto.ReadOnly = false;
+            }
+        }
+
+        private void HabilitarControlesNivelExtra()
+        {
+            txtNombreNivel.Enabled = true;
+            txtDuracion.Enabled = true;
+            txtCosto.Enabled = true;
+
+            btnGuardar.Enabled = true;
+            btnLimpiar.Enabled = true;
+            btnBuscar.Enabled = true;
+
+            if (txtBuscar != null)
+            {
+                txtBuscar.Enabled = true;
+                txtBuscar.ReadOnly = false;
+            }
+        }
+
+        private void btnLimpiarNivelExtra_Click(
+            object? sender,
+            EventArgs e)
+        {
+            /*
+             * Usa la logica original para limpiar y luego restaura
+             * el estado correcto de los controles.
+             */
+            btnLimpiar_Click(sender!, e);
+
+            idSeleccionado = 0;
+
+            HabilitarControlesNivelExtra();
+
+            btnActualizar.Enabled = false;
+            btnEliminar.Enabled = false;
+
+            if (dgvNiveles != null)
+            {
+                dgvNiveles.ClearSelection();
+            }
+
+            txtNombreNivel.Focus();
+        }
+
+        private void dgvNiveles_SelectionChangedExtra(
+            object? sender,
+            EventArgs e)
+        {
+            try
+            {
+                if (dgvNiveles == null ||
+                    dgvNiveles.SelectedRows.Count == 0)
+                {
+                    idSeleccionado = 0;
+                    btnActualizar.Enabled = false;
+                    btnEliminar.Enabled = false;
+                    return;
+                }
+
+                DataGridViewRow fila =
+                    dgvNiveles.SelectedRows[0];
+
+                if (fila.IsNewRow ||
+                    dgvNiveles.Columns["IdNivel"] == null ||
+                    fila.Cells["IdNivel"].Value == null ||
+                    fila.Cells["IdNivel"].Value == DBNull.Value)
+                {
+                    idSeleccionado = 0;
+                    btnActualizar.Enabled = false;
+                    btnEliminar.Enabled = false;
+                    return;
+                }
+
+                idSeleccionado =
+                    Convert.ToInt32(
+                        fila.Cells["IdNivel"].Value
+                    );
+
+                if (dgvNiveles.Columns["NombreNivel"] != null)
+                {
+                    txtNombreNivel.Text =
+                        Convert.ToString(
+                            fila.Cells["NombreNivel"].Value
+                        ) ?? string.Empty;
+                }
+
+                if (dgvNiveles.Columns["DuracionMeses"] != null)
+                {
+                    txtDuracion.Text =
+                        Convert.ToString(
+                            fila.Cells["DuracionMeses"].Value
+                        ) ?? string.Empty;
+                }
+
+                if (dgvNiveles.Columns["Costo"] != null)
+                {
+                    txtCosto.Text =
+                        Convert.ToString(
+                            fila.Cells["Costo"].Value
+                        ) ?? string.Empty;
+                }
+
+                HabilitarControlesNivelExtra();
+
+                btnActualizar.Enabled =
+                    idSeleccionado > 0;
+
+                btnEliminar.Enabled =
+                    idSeleccionado > 0;
+            }
+            catch (Exception ex)
+            {
+                idSeleccionado = 0;
+                btnActualizar.Enabled = false;
+                btnEliminar.Enabled = false;
+
+                MessageBox.Show(
+                    "No se pudo seleccionar el nivel:\r\n" +
+                    ex.Message,
+                    "Niveles",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+        }
+
+        private bool NivelTieneMatriculasExtra(
+            int idNivel)
+        {
+            if (idNivel <= 0)
+            {
+                return false;
+            }
+
+            MatriculaCD matriculaCDExtra =
+                new MatriculaCD();
+
+            var matriculas =
+                matriculaCDExtra.ObtenerTodos();
+
+            if (matriculas == null)
+            {
+                return false;
+            }
+
+            return matriculas.Any(
+                matricula =>
+                    matricula != null &&
+                    matricula.IdNivel == idNivel
+            );
+        }
+
+        private void btnEliminarNivelProtegido_Click(
+            object? sender,
+            EventArgs e)
+        {
+            try
+            {
+                if (idSeleccionado <= 0 ||
+                    dgvNiveles == null ||
+                    dgvNiveles.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show(
+                        "Seleccione un nivel de la grilla para eliminar.",
+                        "Aviso",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+
+                    return;
+                }
+
+                /*
+                 * Proteccion de integridad referencial:
+                 * primero comprueba si existen matriculas que usan
+                 * este nivel. Si existen, NO intenta borrarlo.
+                 */
+                if (NivelTieneMatriculasExtra(idSeleccionado))
+                {
+                    MessageBox.Show(
+                        "No se puede eliminar este nivel porque hay alumnos matriculados en él.",
+                        "Nivel en uso",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+
+                    return;
+                }
+
+                DialogResult confirmacion =
+                    MessageBox.Show(
+                        "¿Desea eliminar el nivel seleccionado?",
+                        "Confirmar eliminación",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                    );
+
+                if (confirmacion != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                /*
+                 * Ejecuta la logica original solamente despues
+                 * de pasar la comprobacion anterior.
+                 */
+                btnEliminar_Click(sender!, e);
+            }
+            catch (Exception ex)
+            {
+                HabilitarControlesNivelExtra();
+
+                btnActualizar.Enabled =
+                    idSeleccionado > 0;
+
+                btnEliminar.Enabled =
+                    idSeleccionado > 0;
+
+                MessageBox.Show(
+                    "No se pudo comprobar si el nivel está en uso:\r\n" +
+                    ex.Message,
+                    "Niveles",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
             }
         }
 

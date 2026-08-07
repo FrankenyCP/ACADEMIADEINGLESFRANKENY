@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace CAPA_PRESENTACION
@@ -29,6 +30,10 @@ namespace CAPA_PRESENTACION
         private Panel pnlCuerpoModerno = null!;
 
         private Panel pnlContenedorModulos = null!;
+
+        // Vista permanente del Dashboard.
+        // Se crea una sola vez y luego solo se muestra/oculta.
+        private Panel pnlDashboardPrincipal = null!;
         private Form? formularioModuloActual;
 
         // Los módulos se crean una sola vez y permanecen cargados.
@@ -180,11 +185,7 @@ namespace CAPA_PRESENTACION
         {
             get
             {
-                CreateParams parametros = base.CreateParams;
-
-                parametros.ExStyle |= 0x02000000;
-
-                return parametros;
+                return base.CreateParams;
             }
         }
 
@@ -205,13 +206,10 @@ namespace CAPA_PRESENTACION
             {
                 disenoInicializado = true;
 
-                SuspendLayout();
-
                 try
                 {
                     InicializarDisenoModerno();
                     InicializarFuncionesExtras();
-                    PerformLayout();
                     AjustarContenidoDesplazable();
                 }
                 catch (Exception ex)
@@ -224,24 +222,17 @@ namespace CAPA_PRESENTACION
                         MessageBoxIcon.Error
                     );
                 }
-                finally
-                {
-                    ResumeLayout(true);
-                }
             }
 
             base.SetVisibleCore(value);
 
-            if (value && !formularioMostrado)
+            if (value)
             {
                 formularioMostrado = true;
 
-                BeginInvoke(new Action(() =>
-                {
-                    AjustarContenidoDesplazable();
-                    Invalidate(true);
-                    Update();
-                }));
+                // Dashboard ya construido y listo.
+                pnlDashboardPrincipal.Visible = true;
+                pnlContenedorModulos.Visible = false;
             }
         }
 
@@ -297,8 +288,7 @@ namespace CAPA_PRESENTACION
             SetStyle(
                 ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.UserPaint |
-                ControlStyles.OptimizedDoubleBuffer |
-                ControlStyles.ResizeRedraw,
+                ControlStyles.OptimizedDoubleBuffer,
                 true
             );
 
@@ -371,18 +361,39 @@ namespace CAPA_PRESENTACION
             pnlContenidoModerno.Controls.Add(pnlCuerpoModerno);
             pnlContenidoModerno.Controls.Add(pnlEncabezadoModerno);
 
+            // Panel permanente que contiene TODO el Dashboard.
+            pnlDashboardPrincipal = new Panel
+            {
+                Name = "pnlDashboardPrincipal",
+                Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty,
+                BackColor = Color.Transparent,
+                Visible = true
+            };
+
+            // El encabezado y el cuerpo del Dashboard viven aquí.
+            pnlDashboardPrincipal.Controls.Add(pnlCuerpoModerno);
+            pnlDashboardPrincipal.Controls.Add(pnlEncabezadoModerno);
+
             pnlContenedorModulos = new Panel
             {
                 Name = "pnlContenedorModulos",
                 Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty,
                 BackColor = Color.FromArgb(4, 18, 47),
                 Visible = false
             };
 
+            pnlContenidoModerno.Controls.Clear();
             pnlContenidoModerno.Controls.Add(pnlContenedorModulos);
+            pnlContenidoModerno.Controls.Add(pnlDashboardPrincipal);
 
             Controls.Add(pnlContenidoModerno);
             Controls.Add(pnlMenuModerno);
+
+            pnlDashboardPrincipal.BringToFront();
 
             CrearTablaPrincipal();
         }
@@ -492,7 +503,10 @@ namespace CAPA_PRESENTACION
             }
 
             tlpPrincipal.Location = new Point(20, 18);
-            tlpPrincipal.Width = Math.Max(900, anchoDisponible);
+
+            // El Dashboard sigue el ancho real disponible.
+            // No se fuerza un ancho mínimo artificial durante resize/maximizado.
+            tlpPrincipal.Width = Math.Max(1, anchoDisponible);
             tlpPrincipal.Height = 690;
 
             pnlCuerpoModerno.AutoScrollMinSize =
@@ -812,86 +826,71 @@ namespace CAPA_PRESENTACION
             {
                 Type tipoModulo = formularioSolicitado.GetType();
 
-                if (formularioModuloActual != null &&
-                    !formularioModuloActual.IsDisposed &&
-                    formularioModuloActual.GetType() == tipoModulo)
+                Form modulo;
+
+                // Reutilizar el módulo si ya fue abierto.
+                if (modulosCargados.TryGetValue(
+                        tipoModulo,
+                        out Form? moduloExistente) &&
+                    !moduloExistente.IsDisposed)
                 {
+                    modulo = moduloExistente;
                     formularioSolicitado.Dispose();
+                }
+                else
+                {
+                    modulo = formularioSolicitado;
+
+                    modulo.TopLevel = false;
+                    modulo.FormBorderStyle = FormBorderStyle.None;
+                    modulo.WindowState = FormWindowState.Normal;
+                    modulo.StartPosition = FormStartPosition.Manual;
+                    modulo.MinimumSize = Size.Empty;
+                    modulo.MaximumSize = Size.Empty;
+                    modulo.Margin = Padding.Empty;
+                    modulo.Padding = Padding.Empty;
+                    modulo.Dock = DockStyle.Fill;
+
+                    PrepararModuloEspecifico(modulo);
+
+                    pnlContenedorModulos.Controls.Add(modulo);
+                    modulosCargados[tipoModulo] = modulo;
+                }
+
+                // Si ya es el módulo actual, no hacer nada.
+                if (formularioModuloActual == modulo &&
+                    modulo.Visible)
+                {
+                    modulo.Focus();
                     return;
                 }
 
-                pnlContenidoModerno.SuspendLayout();
-                pnlContenedorModulos.SuspendLayout();
-
-                try
+                // Ocultar módulo anterior.
+                if (formularioModuloActual != null &&
+                    !formularioModuloActual.IsDisposed &&
+                    formularioModuloActual != modulo)
                 {
-                    if (formularioModuloActual != null &&
-                        !formularioModuloActual.IsDisposed)
-                    {
-                        formularioModuloActual.Hide();
-                    }
+                    formularioModuloActual.Hide();
+                }
 
-                    Form modulo;
+                formularioModuloActual = modulo;
 
-                    if (modulosCargados.TryGetValue(
-                            tipoModulo,
-                            out Form? moduloExistente) &&
-                        !moduloExistente.IsDisposed)
-                    {
-                        modulo = moduloExistente;
-                        formularioSolicitado.Dispose();
-                    }
-                    else
-                    {
-                        modulo = formularioSolicitado;
+                // CAMBIO DIRECTO:
+                // Dashboard OFF / módulos ON.
+                pnlDashboardPrincipal.Visible = false;
 
-                        modulo.TopLevel = false;
-                        modulo.FormBorderStyle =
-                            FormBorderStyle.None;
+                pnlContenedorModulos.Visible = true;
+                pnlContenedorModulos.Dock = DockStyle.Fill;
 
-                        modulo.WindowState =
-                            FormWindowState.Normal;
+                modulo.Dock = DockStyle.Fill;
 
-                        modulo.StartPosition =
-                            FormStartPosition.Manual;
-
-                        modulo.MinimumSize = Size.Empty;
-                        modulo.MaximumSize = Size.Empty;
-                        modulo.Margin = Padding.Empty;
-                        modulo.Padding = Padding.Empty;
-                        modulo.Dock = DockStyle.Fill;
-
-                        PrepararModuloEspecifico(modulo);
-
-                        pnlContenedorModulos.Controls.Add(modulo);
-                        modulosCargados[tipoModulo] = modulo;
-
-                        modulo.Show();
-                    }
-
-                    formularioModuloActual = modulo;
-
-                    pnlEncabezadoModerno.Visible = false;
-                    pnlCuerpoModerno.Visible = false;
-
-                    pnlContenedorModulos.Visible = true;
-                    pnlContenedorModulos.Dock = DockStyle.Fill;
-                    pnlContenedorModulos.Margin = Padding.Empty;
-                    pnlContenedorModulos.Padding = Padding.Empty;
-                    pnlContenedorModulos.BringToFront();
-
-                    modulo.Dock = DockStyle.Fill;
-                    modulo.Bounds =
-                        pnlContenedorModulos.ClientRectangle;
-
+                if (!modulo.Visible)
+                {
                     modulo.Show();
-                    modulo.BringToFront();
                 }
-                finally
-                {
-                    pnlContenedorModulos.ResumeLayout(true);
-                    pnlContenidoModerno.ResumeLayout(true);
-                }
+
+                modulo.BringToFront();
+                modulo.Focus();
             }
             catch (Exception ex)
             {
@@ -900,19 +899,42 @@ namespace CAPA_PRESENTACION
                     formularioSolicitado.Dispose();
                 }
 
-                formularioModuloActual = null;
-
                 MessageBox.Show(
-                    "No se pudo abrir el modulo:\r\n" +
+                    "No se pudo abrir el módulo:\r\n" +
                     ex.Message,
                     "Lexbridge",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
-
-                MostrarDashboardPrincipal();
             }
         }
+
+        // Nueva mejora:
+        // Permite congelar el redibujado durante el cambio de modulo.
+        private static void CambiarRedibujado(
+            Control control,
+            bool habilitar)
+        {
+            if (control == null || !control.IsHandleCreated)
+            {
+                return;
+            }
+
+            SendMessage(
+                control.Handle,
+                0x000B,
+                habilitar ? new IntPtr(1) : IntPtr.Zero,
+                IntPtr.Zero
+            );
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(
+            IntPtr hWnd,
+            int msg,
+            IntPtr wParam,
+            IntPtr lParam
+        );
 
         private void PrepararModuloEspecifico(
             Form formulario)
@@ -984,8 +1006,9 @@ namespace CAPA_PRESENTACION
             }
             finally
             {
-                formulario.ResumeLayout(true);
-                formulario.PerformLayout();
+                // Nueva correccion:
+                // No fuerza un repintado completo del formulario.
+                formulario.ResumeLayout(false);
             }
         }
 
@@ -1065,44 +1088,30 @@ namespace CAPA_PRESENTACION
 
         private void MostrarDashboardPrincipal()
         {
-            pnlContenidoModerno.SuspendLayout();
-            pnlContenedorModulos.SuspendLayout();
-
-            try
+            // Ocultar el módulo actual, sin destruirlo.
+            if (formularioModuloActual != null &&
+                !formularioModuloActual.IsDisposed)
             {
-                if (formularioModuloActual != null &&
-                    !formularioModuloActual.IsDisposed)
-                {
-                    formularioModuloActual.Hide();
-                }
-
-                formularioModuloActual = null;
-
-                pnlContenedorModulos.Visible = false;
-
-                pnlEncabezadoModerno.Visible = true;
-                pnlCuerpoModerno.Visible = true;
-
-                pnlEncabezadoModerno.BringToFront();
-                pnlCuerpoModerno.BringToFront();
-
-                AjustarContenidoDesplazable();
-
-                try
-                {
-                    btnRefrescarDashboard.PerformClick();
-                }
-                catch
-                {
-                    // El dashboard permanece visible.
-                }
+                formularioModuloActual.Hide();
             }
-            finally
-            {
-                pnlContenedorModulos.ResumeLayout(false);
-                pnlContenidoModerno.ResumeLayout(true);
-            }
+
+            formularioModuloActual = null;
+
+            // CAMBIO DIRECTO TIPO PESTAÑA:
+            // módulos OFF / Dashboard ON.
+            pnlContenedorModulos.Visible = false;
+
+            pnlDashboardPrincipal.Visible = true;
+            pnlDashboardPrincipal.Dock = DockStyle.Fill;
+            pnlDashboardPrincipal.BringToFront();
+
+            // No reconstruir.
+            // No BeginInvoke.
+            // No Refresh.
+            // No Update.
+            // No Invalidate.
         }
+
 
         private void CerrarModuloActual()
         {

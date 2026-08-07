@@ -86,6 +86,8 @@ namespace CAPA_PRESENTACION
         {
             get
             {
+                // No usar WS_EX_COMPOSITED cuando frmAlumnos se integra
+                // dentro de frmPrincipal. Puede impedir el repintado del Form hijo.
                 return base.CreateParams;
             }
         }
@@ -103,63 +105,81 @@ namespace CAPA_PRESENTACION
                 return;
             }
 
-            if (value && !disenoAlumnosInicializado)
+            try
             {
-                disenoAlumnosInicializado = true;
-
-                SuspendLayout();
-
-                try
+                // En modo normal, esta es la inicializacion de respaldo.
+                // En modo integrado ya se inicializa en PrepararModoIntegrado().
+                if (value && !disenoAlumnosInicializado)
                 {
-                    InicializarDisenoAlumnos();
+                    InicializarAlumnosSeguro();
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        "Error al preparar el diseno de alumnos:\r\n" +
-                        ex.Message,
-                        "Gestion de Alumnos",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error
-                    );
-                }
-                finally
-                {
-                    ResumeLayout(true);
-                }
-            }
 
-            base.SetVisibleCore(value);
+                base.SetVisibleCore(value);
 
-            if (value && !formularioAlumnosMostrado)
-            {
+                if (!value || IsDisposed)
+                    return;
+
+                if (modoIntegrado)
+                {
+                    AplicarModoIntegrado();
+                }
+                else
+                {
+                    AjustarDisenoResponsivo();
+                }
+
                 formularioAlumnosMostrado = true;
 
-                BeginInvoke(new Action(() =>
+                PerformLayout();
+                Invalidate(true);
+                Update();
+            }
+            catch (Exception ex)
+            {
+                try
                 {
-                    if (IsDisposed)
-                        return;
+                    base.SetVisibleCore(value);
+                }
+                catch
+                {
+                }
 
-                    SuspendLayout();
+                MessageBox.Show(
+                    "No se pudo mostrar el modulo de Alumnos:\r\n\r\n" +
+                    ex.Message,
+                    "Lexbridge - Alumnos",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
 
-                    try
-                    {
-                        if (modoIntegrado)
-                        {
-                            AplicarModoIntegrado();
-                        }
-                        else
-                        {
-                            AjustarDisenoResponsivo();
-                        }
+        private void InicializarAlumnosSeguro()
+        {
+            if (disenoAlumnosInicializado)
+                return;
 
-                        ActualizarTotalAlumnos();
-                    }
-                    finally
-                    {
-                        ResumeLayout(true);
-                    }
-                }));
+            SuspendLayout();
+
+            try
+            {
+                // Solo se marca como inicializado cuando realmente comienza
+                // la construccion del diseño.
+                disenoAlumnosInicializado = true;
+
+                InicializarDisenoAlumnos();
+
+                PerformLayout();
+            }
+            catch
+            {
+                // Permite volver a intentar si la inicializacion falla.
+                disenoAlumnosInicializado = false;
+                throw;
+            }
+            finally
+            {
+                ResumeLayout(true);
             }
         }
 
@@ -169,6 +189,18 @@ namespace CAPA_PRESENTACION
 
         private void InicializarDisenoAlumnos()
         {
+            // Configuración de doble buffer movida aquí para evitar
+            // duplicar el constructor definido en frmAlumnos.cs.
+            this.DoubleBuffered = true;
+            this.SetStyle(
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.UserPaint |
+                ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.ResizeRedraw,
+                true
+            );
+            this.UpdateStyles();
+
             ConfigurarFormulario();
             CrearEstructuraPrincipal();
             CrearMenuLateral();
@@ -203,7 +235,7 @@ namespace CAPA_PRESENTACION
             if (!modoIntegrado)
             {
                 ClientSize = new Size(1420, 800);
-                MinimumSize = new Size(1180, 720);
+                MinimumSize = new Size(1220, 720);
                 StartPosition = FormStartPosition.CenterScreen;
                 FormBorderStyle = FormBorderStyle.Sizable;
                 MaximizeBox = true;
@@ -244,7 +276,6 @@ namespace CAPA_PRESENTACION
         // =========================================================
         // ESTRUCTURA PRINCIPAL
         // =========================================================
-
         private void CrearEstructuraPrincipal()
         {
             pnlMenuLateral = new Panel
@@ -283,8 +314,8 @@ namespace CAPA_PRESENTACION
             pnlContenido.Controls.Add(pnlCuerpo);
             pnlContenido.Controls.Add(pnlEncabezado);
 
-            Controls.Add(pnlContenido);
             Controls.Add(pnlMenuLateral);
+            Controls.Add(pnlContenido);
 
             pnlCuerpo.Resize += (sender, e) =>
             {
@@ -2690,38 +2721,59 @@ namespace CAPA_PRESENTACION
             }
         }
 
+        // =========================================================
+        // *** CORRECCIÓN PRINCIPAL: MODO INTEGRADO ***
+        // =========================================================
+
         public void PrepararModoIntegrado()
         {
-            modoIntegrado = true;
-
-            TopLevel = false;
-            FormBorderStyle = FormBorderStyle.None;
-            WindowState = FormWindowState.Normal;
-            StartPosition = FormStartPosition.Manual;
-
-            MinimumSize = Size.Empty;
-            MaximumSize = Size.Empty;
-            AutoScaleMode = AutoScaleMode.Dpi;
-            AutoScroll = false;
-
-            Dock = DockStyle.Fill;
-            Margin = Padding.Empty;
-            Padding = Padding.Empty;
-
-            if (disenoAlumnosInicializado)
+            try
             {
-                AplicarModoIntegrado();
-            }
+                modoIntegrado = true;
 
-            if (IsHandleCreated)
-            {
-                BeginInvoke(new Action(() =>
+                TopLevel = false;
+                FormBorderStyle = FormBorderStyle.None;
+                WindowState = FormWindowState.Normal;
+                StartPosition = FormStartPosition.Manual;
+
+                MinimumSize = Size.Empty;
+                MaximumSize = Size.Empty;
+
+                Margin = Padding.Empty;
+                Padding = Padding.Empty;
+
+                AutoScaleMode = AutoScaleMode.Dpi;
+                AutoScroll = false;
+
+                // CLAVE:
+                // Inicializar AHORA, antes de que frmPrincipal llame Show().
+                // Así Alumnos no depende de SetVisibleCore para existir visualmente.
+                if (!disenoAlumnosInicializado)
                 {
-                    if (!IsDisposed)
-                    {
-                        AplicarModoIntegrado();
-                    }
-                }));
+                    InicializarAlumnosSeguro();
+                }
+
+                AplicarModoIntegrado();
+
+                Dock = DockStyle.Fill;
+                Visible = true;
+
+                BringToFront();
+                PerformLayout();
+                Invalidate(true);
+                Update();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No se pudo preparar Alumnos para el panel principal:\r\n\r\n" +
+                    ex.Message,
+                    "Lexbridge - Alumnos",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                throw;
             }
         }
 
@@ -2734,30 +2786,43 @@ namespace CAPA_PRESENTACION
 
             try
             {
-                MinimumSize = Size.Empty;
-                MaximumSize = Size.Empty;
-                FormBorderStyle = FormBorderStyle.None;
-                WindowState = FormWindowState.Normal;
-                StartPosition = FormStartPosition.Manual;
-                AutoScaleMode = AutoScaleMode.Dpi;
+                // 1. Configurar el formulario principal
+                this.MinimumSize = Size.Empty;
+                this.MaximumSize = Size.Empty;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.WindowState = FormWindowState.Normal;
+                this.StartPosition = FormStartPosition.Manual;
+                this.AutoScaleMode = AutoScaleMode.Dpi;
+                this.Dock = DockStyle.Fill;
+                this.Margin = Padding.Empty;
+                this.Padding = Padding.Empty;
 
+                // 2. *** OCULTAR COMPLETAMENTE EL MENÚ LATERAL ***
                 if (pnlMenuLateral != null)
                 {
                     pnlMenuLateral.Visible = false;
+                    pnlMenuLateral.Enabled = false;
                     pnlMenuLateral.Dock = DockStyle.None;
                     pnlMenuLateral.Width = 0;
+                    pnlMenuLateral.Height = 0;
+                    pnlMenuLateral.SendToBack();
                 }
 
+                // 3. *** OCULTAR COMPLETAMENTE EL ENCABEZADO ***
                 if (pnlEncabezado != null)
                 {
                     pnlEncabezado.Visible = false;
+                    pnlEncabezado.Enabled = false;
                     pnlEncabezado.Dock = DockStyle.None;
                     pnlEncabezado.Height = 0;
+                    pnlEncabezado.SendToBack();
                 }
 
+                // 4. Configurar el panel de contenido para que ocupe TODO el espacio
                 if (pnlContenido != null)
                 {
                     pnlContenido.Visible = true;
+                    pnlContenido.Enabled = true;
                     pnlContenido.Dock = DockStyle.Fill;
                     pnlContenido.Location = Point.Empty;
                     pnlContenido.Margin = Padding.Empty;
@@ -2765,16 +2830,41 @@ namespace CAPA_PRESENTACION
                     pnlContenido.BringToFront();
                 }
 
+                // 5. Configurar el cuerpo para que ocupe TODO el espacio
                 if (pnlCuerpo != null)
                 {
                     pnlCuerpo.Visible = true;
+                    pnlCuerpo.Enabled = true;
                     pnlCuerpo.Dock = DockStyle.Fill;
                     pnlCuerpo.Location = Point.Empty;
                     pnlCuerpo.Margin = Padding.Empty;
                     pnlCuerpo.Padding = new Padding(18);
+                    pnlCuerpo.BringToFront();
                 }
 
+                // 6. Forzar que los botones de navegación del módulo NO se muestren
+                btnMenuDashboard.Visible = false;
+                btnMenuAlumnos.Visible = false;
+                btnMenuNiveles.Visible = false;
+                btnMenuInstructores.Visible = false;
+                btnMenuMatriculas.Visible = false;
+                btnMenuPagos.Visible = false;
+                btnMenuReportes.Visible = false;
+                btnMenuConsulta.Visible = false;
+
+                // 7. Ocultar el botón de cerrar ventana
+                if (btnCerrarVentana != null)
+                {
+                    btnCerrarVentana.Visible = false;
+                }
+
+                // 8. Ajustar el diseño responsivo
                 AjustarDisenoResponsivo();
+
+                // 9. Forzar actualización visual
+                this.Refresh();
+                this.Invalidate(true);
+                this.Update();
             }
             finally
             {

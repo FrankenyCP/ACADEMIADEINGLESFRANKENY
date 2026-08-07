@@ -87,6 +87,7 @@ namespace CAPA_PRESENTACION
 
         private bool correoPagoConfigurado;
         private bool procesandoCorreoPago;
+        private bool interconexionPagosConfigurada;
 
         // =========================================================
         // REDUCIR PARPADEO
@@ -1942,9 +1943,160 @@ namespace CAPA_PRESENTACION
 
             correoPagoConfigurado = true;
 
+            // Guardar conserva el envío de correo.
             btnGuardar.Click -= btnGuardar_Click;
             btnGuardar.Click -= btnGuardarPagoConCorreo_Click;
             btnGuardar.Click += btnGuardarPagoConCorreo_Click;
+
+            // Reconectar los demás controles para evitar que queden
+            // sin respuesta dentro del frmPrincipal.
+            btnLimpiar.Click -= btnLimpiar_Click;
+            btnLimpiar.Click -= btnLimpiarPagoIntegrado_Click;
+            btnLimpiar.Click += btnLimpiarPagoIntegrado_Click;
+
+            btnEliminar.Click -= btnEliminar_Click;
+            btnEliminar.Click -= btnEliminarPagoIntegrado_Click;
+            btnEliminar.Click += btnEliminarPagoIntegrado_Click;
+
+            cmbMatricula.SelectedIndexChanged -=
+                cmbMatricula_SelectedIndexChanged;
+            cmbMatricula.SelectedIndexChanged +=
+                cmbMatricula_SelectedIndexChanged;
+
+            dgvPagos.SelectionChanged -=
+                dgvPagos_SelectionChanged;
+            dgvPagos.SelectionChanged +=
+                dgvPagos_SelectionChanged;
+
+            dgvPagos.SelectionChanged -=
+                dgvPagos_SelectionChangedExtra;
+            dgvPagos.SelectionChanged +=
+                dgvPagos_SelectionChangedExtra;
+        }
+
+        private int ObtenerIdMatriculaSeleccionadaExtra()
+        {
+            if (cmbMatricula == null ||
+                cmbMatricula.SelectedValue == null)
+            {
+                return 0;
+            }
+
+            return int.TryParse(
+                cmbMatricula.SelectedValue.ToString(),
+                out int idMatricula
+            )
+                ? idMatricula
+                : 0;
+        }
+
+        private void btnLimpiarPagoIntegrado_Click(
+            object? sender,
+            EventArgs e)
+        {
+            btnLimpiar_Click(sender!, e);
+            RestaurarControlesPagos();
+
+            if (ObtenerIdMatriculaSeleccionadaExtra() > 0)
+            {
+                ActualizarSaldo();
+            }
+        }
+
+        private void btnEliminarPagoIntegrado_Click(
+            object? sender,
+            EventArgs e)
+        {
+            int idMatriculaAnterior =
+                ObtenerIdMatriculaSeleccionadaExtra();
+
+            btnEliminar_Click(sender!, e);
+
+            if (idMatriculaAnterior > 0 &&
+                cmbMatricula.Items.Count > 0)
+            {
+                cmbMatricula.SelectedValue = idMatriculaAnterior;
+            }
+
+            CargarGrilla();
+
+            if (ObtenerIdMatriculaSeleccionadaExtra() > 0)
+            {
+                ActualizarSaldo();
+            }
+
+            RestaurarControlesPagos();
+        }
+
+        private void dgvPagos_SelectionChangedExtra(
+            object? sender,
+            EventArgs e)
+        {
+            if (dgvPagos.SelectedRows.Count == 0)
+            {
+                btnEliminar.Enabled = false;
+                return;
+            }
+
+            DataGridViewRow fila = dgvPagos.SelectedRows[0];
+
+            if (fila.IsNewRow)
+                return;
+
+            try
+            {
+                if (dgvPagos.Columns.Contains("Monto") &&
+                    fila.Cells["Monto"].Value != null)
+                {
+                    txtMonto.Text = Convert.ToDecimal(
+                        fila.Cells["Monto"].Value
+                    ).ToString("0.00");
+                }
+
+                if (dgvPagos.Columns.Contains("FechaPago") &&
+                    fila.Cells["FechaPago"].Value != null &&
+                    fila.Cells["FechaPago"].Value != DBNull.Value)
+                {
+                    dtpFechaPago.Value = Convert.ToDateTime(
+                        fila.Cells["FechaPago"].Value
+                    );
+                }
+
+                if (dgvPagos.Columns.Contains("MetodoPago") &&
+                    fila.Cells["MetodoPago"].Value != null)
+                {
+                    string metodo =
+                        fila.Cells["MetodoPago"].Value.ToString()
+                        ?? string.Empty;
+
+                    int indice = cmbMetodoPago.Items.IndexOf(metodo);
+                    if (indice >= 0)
+                    {
+                        cmbMetodoPago.SelectedIndex = indice;
+                    }
+                }
+
+                RestaurarControlesPagos();
+                btnEliminar.Enabled = idSeleccionado > 0;
+            }
+            catch
+            {
+                // La selección original continúa funcionando.
+            }
+        }
+
+        private void RestaurarControlesPagos()
+        {
+            cmbMatricula.Enabled = true;
+            txtMonto.Enabled = true;
+            dtpFechaPago.Enabled = true;
+            cmbMetodoPago.Enabled = true;
+
+            btnGuardar.Enabled = true;
+            btnLimpiar.Enabled = true;
+            btnEliminar.Enabled = idSeleccionado > 0;
+
+            txtMonto.ReadOnly = false;
         }
 
         private async void btnGuardarPagoConCorreo_Click(
@@ -2073,6 +2225,7 @@ namespace CAPA_PRESENTACION
             finally
             {
                 procesandoCorreoPago = false;
+                RestaurarControlesPagos();
             }
         }
 
@@ -2801,6 +2954,7 @@ namespace CAPA_PRESENTACION
                     AjustarDisenoPagos();
                 }
 
+                RestaurarControlesPagos();
                 Invalidate(true);
             }
             finally
