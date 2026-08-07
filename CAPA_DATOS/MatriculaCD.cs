@@ -2,7 +2,8 @@
 
 namespace CAPA_DATOS;
 
-// TODO: Modelo que representa la tabla MATRICULAS en la base de datos
+// TODO: Encapsulacion - Atributos privados con propiedades públicas (get/set), representa un registro de la tabla MATRICULAS
+// TODO: Arquitectura en Capas - Clase de entidad (modelo) perteneciente a CAPA_DATOS
 // Contiene campos extra para mostrar información relacionada en la grilla
 public class _Matricula
 {
@@ -18,18 +19,18 @@ public class _Matricula
     public int IdInstructor { get => idInstructor; set => idInstructor = value; }
     public DateTime FechaMatricula { get => fechaMatricula; set => fechaMatricula = value; }
 
-    // TODO: Campos extra para mostrar información relacionada en la grilla
+    // Campos extra para mostrar información relacionada en la grilla (no vienen de la tabla MATRICULAS directamente, se llenan con el JOIN)
     public string NombreAlumno { get; set; } = string.Empty;
     public string NombreNivel { get; set; } = string.Empty;
     public string NombreInstructor { get; set; } = string.Empty;
 
-    // TODO: Constructor vacío — inicializa la fecha con el día de hoy
+    // TODO: Clases creadas según su uso, sin código ajeno - Constructor vacío, inicializa la fecha con el día de hoy
     public _Matricula()
     {
         this.fechaMatricula = DateTime.Today;
     }
 
-    // TODO: Constructor parametrizado — inicializa todos los campos de la matrícula
+    // TODO: Clases creadas según su uso, sin código ajeno - Constructor sobrecargado, inicializa todos los campos de la matrícula (ej. al leer de la base de datos)
     public _Matricula(int idMatricula, int idAlumno, int idNivel,
                       int idInstructor, DateTime fechaMatricula)
     {
@@ -41,11 +42,13 @@ public class _Matricula
     }
 }
 
-// TODO: DAL de Matrículas — maneja todas las operaciones SQL sobre la tabla MATRICULAS
+// TODO: Arquitectura en Capas - Clase perteneciente a CAPA_DATOS, encargada exclusivamente del acceso a datos de la tabla MATRICULAS
+// TODO: Clases creadas según su uso, sin código ajeno - Clase dedicada únicamente a las operaciones sobre matrículas, sin lógica de negocio ni de presentación
 // Respeta la arquitectura en capas: solo accede a datos, sin lógica de negocio
 public class MatriculaCD
 {
-    // TODO: Inserta una nueva matrícula en la base de datos
+    // TODO: Conexión a datos - Abre conexión a SQL Server mediante la clase Conexion para insertar una nueva matrícula
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que inserta un registro en la tabla MATRICULAS
     // Retorna true si la inserción fue exitosa, false si falló
     public bool Insertar(_Matricula m)
     {
@@ -66,8 +69,8 @@ public class MatriculaCD
         }
     }
 
-    // TODO: Verifica si ya existe una matrícula activa para el alumno en el mismo nivel
-    // Evita registros duplicados — un alumno no puede estar dos veces en el mismo nivel
+    // TODO: Conexión a datos - Consulta a SQL Server para verificar si ya existe una matrícula activa para el alumno en el mismo nivel
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono de validación, evita registros duplicados (un alumno no puede estar dos veces en el mismo nivel)
     public bool ExisteMatriculaDuplicada(int idAlumno, int idNivel)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -85,8 +88,8 @@ public class MatriculaCD
         }
     }
 
-    // TODO: Obtiene todas las matrículas con información de alumno, nivel e instructor
-    // Usa INNER JOIN para traer los nombres relacionados en una sola consulta
+    // TODO: Conexión a datos - Consulta a SQL Server usando INNER JOIN para traer los nombres relacionados de alumno, nivel e instructor en una sola consulta
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que retorna la lista completa de matrículas con su información relacionada
     public List<_Matricula> ObtenerTodos()
     {
         var lista = new List<_Matricula>();
@@ -119,7 +122,8 @@ public class MatriculaCD
         return lista;
     }
 
-    // TODO: Elimina una matrícula por su ID
+    // TODO: Conexión a datos - Abre conexión a SQL Server para eliminar una matrícula por su Id
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que ejecuta el DELETE sobre la tabla MATRICULAS
     // Solo se puede eliminar si no tiene pagos asociados (verificar antes de llamar)
     public bool Eliminar(int idMatricula)
     {
@@ -136,8 +140,8 @@ public class MatriculaCD
         }
     }
 
-    // TODO: Verifica si una matrícula tiene pagos registrados
-    // Se usa antes de eliminar para respetar la integridad referencial
+    // TODO: Conexión a datos - Abre conexión a SQL Server para verificar si una matrícula tiene pagos registrados
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono de validación, se usa antes de eliminar para respetar la integridad referencial
     public bool TienePagos(int idMatricula)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -153,8 +157,8 @@ public class MatriculaCD
         }
     }
 
-    // TODO: Obtiene el nivel actual del alumno (el más reciente por ID de matrícula)
-    // Se usa en frmAlumnos para mostrar el nivel actual al seleccionar un alumno
+    // TODO: Conexión a datos - Consulta a SQL Server usando TOP 1 e INNER JOIN para obtener el nivel más reciente del alumno según su última matrícula
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono usado en frmAlumnos para mostrar el nivel actual al seleccionar un alumno
     public string ObtenerNivelAlumno(int idAlumno)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -174,8 +178,8 @@ public class MatriculaCD
         }
     }
 
-    // TODO: Actualiza el nivel de una matrícula existente al promover un alumno
-    // Se llama desde frmAlumnos cuando el director presiona el botón Promover
+    // TODO: Conexión a datos - Abre conexión a SQL Server para actualizar el nivel de una matrícula existente al promover un alumno
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método público síncrono que ejecuta el UPDATE, se llama desde frmAlumnos cuando el director presiona el botón Promover
     public bool ActualizarNivel(int idMatricula, int idNivelNuevo)
     {
         using (var con = Conexion.ObtenerConexion())
@@ -192,8 +196,8 @@ public class MatriculaCD
         }
     }
 
-    // TODO: Obtiene la matrícula activa de un alumno específico
-    // Se usa para verificar si el alumno ya tiene una matrícula antes de crear una nueva
+    // TODO: Conexión a datos - Consulta a SQL Server con TOP 1 y ORDER BY DESC para obtener la matrícula más reciente de un alumno específico
+    // TODO: Métodos, métodos abstractos y métodos virtuales - Método síncrono usado para verificar si el alumno ya tiene una matrícula antes de crear una nueva
     public _Matricula ObtenerMatriculaActiva(int idAlumno)
     {
         using (var con = Conexion.ObtenerConexion())

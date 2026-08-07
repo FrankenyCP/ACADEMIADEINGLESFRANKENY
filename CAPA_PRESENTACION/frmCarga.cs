@@ -11,11 +11,14 @@ using System.Windows.Forms;
 namespace CAPA_PRESENTACION
 {
 
+    // TODO: Arquitectura en Capas - Formulario perteneciente a CAPA_PRESENTACION, pantalla de carga (splash screen) mostrada antes del login
+    // TODO: Formulario principal - No es el formulario principal en sí, pero es el primer formulario que se ejecuta antes de abrir frmLogin
     public partial class frmCarga : Form
     {
         private bool cargaIniciada = false;
         private int progresoActual = 0;
 
+        // TODO: Login - Variable estática que impide abrir más de una instancia de frmLogin al mismo tiempo desde esta pantalla de carga
         // Impide abrir mas de un login.
         private static int loginAbierto = 0;
 
@@ -47,6 +50,7 @@ namespace CAPA_PRESENTACION
             UpdateStyles();
         }
 
+        // TODO: Logo - Configura el PictureBox del logo de la academia y le aplica el recorte de márgenes transparentes
         private void ConfigurarControles()
         {
             // Logo
@@ -135,6 +139,7 @@ namespace CAPA_PRESENTACION
             );
         }
 
+        // TODO: Llamadas asíncronas - Evento OnShown declarado async void, ejecuta la animación de carga con await sin bloquear la interfaz gráfica
         protected override async void OnShown(EventArgs e)
         {
             base.OnShown(e);
@@ -152,6 +157,7 @@ namespace CAPA_PRESENTACION
             AbrirLoginUnaVez();
         }
 
+        // TODO: Llamadas asíncronas - Método asíncrono que encadena varias animaciones de progreso usando await, simula las etapas de inicialización del sistema
         private async Task EjecutarCargaAsync()
         {
             progresoActual = 0;
@@ -202,6 +208,7 @@ namespace CAPA_PRESENTACION
             await Task.Delay(550);
         }
 
+        // TODO: Llamadas asíncronas - Método asíncrono que anima la barra de progreso entre dos valores usando un bucle con await Task.Delay, sin congelar la interfaz gráfica
         private async Task AnimarProgresoAsync(
             int inicio,
             int final,
@@ -268,6 +275,7 @@ namespace CAPA_PRESENTACION
             pnlProgreso.BringToFront();
         }
 
+        // TODO: Login - Abre el formulario de login una única vez al terminar la carga, evitando instancias duplicadas mediante Interlocked.CompareExchange
         private void AbrirLoginUnaVez()
         {
             // Solo la primera llamada puede pasar.
@@ -615,6 +623,7 @@ namespace CAPA_PRESENTACION
             return forma;
         }
 
+        // TODO: Logo - Recorta automáticamente el margen transparente alrededor del logo cargado, para que se vea mejor ajustado en el PictureBox
         /*
          * Elimina automaticamente el espacio transparente
          * alrededor del logo.

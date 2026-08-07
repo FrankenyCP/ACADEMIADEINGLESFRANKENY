@@ -6,13 +6,18 @@ using System.Threading.Tasks;
 
 namespace CAPA_NEGOCIOS
 {
+    // TODO: Arquitectura en Capas - Clase de negocio perteneciente a CAPA_NEGOCIOS, encapsula el envío de correos electrónicos del sistema (registro, cancelación, pagos)
+    // TODO: Clases creadas según su uso, sin código ajeno - Clase dedicada únicamente al envío de correos, sin mezclar lógica de otras entidades
     public sealed class ServicioCorreo
     {
+        // TODO: Encapsulacion - Constantes privadas con los datos del servidor SMTP usado para el envío de correos
         private const string ServidorSmtp =
             "smtp.gmail.com";
 
         private const int PuertoSmtp = 587;
 
+        // TODO: Interfaces Y Asincrónicos - Método base asíncrono que arma y envía el correo vía SMTP; es el que reutilizan EnviarRegistroExitosoAsync, EnviarCancelacionMatriculaAsync y EnviarConfirmacionPagoAsync
+        // TODO: Llamadas asíncronas - Usa await con SendMailAsync para enviar el correo sin bloquear el hilo de la interfaz gráfica
         public async Task EnviarCorreoAsync(
             string destinatario,
             string asunto,
@@ -80,6 +85,8 @@ namespace CAPA_NEGOCIOS
             await cliente.SendMailAsync(mensaje);
         }
 
+        // TODO: Interfaces Y Asincrónicos - Método asíncrono que cumple la firma definida en IServicioCorreo, notifica al alumno que su registro fue exitoso
+        // TODO: Llamadas asíncronas - Construye el correo HTML y delega el envío a EnviarCorreoAsync mediante await
         public async Task EnviarRegistroExitosoAsync(
             string destinatario,
             string nombreCompleto)
@@ -162,6 +169,8 @@ namespace CAPA_NEGOCIOS
             );
         }
 
+        // TODO: Interfaces Y Asincrónicos - Método asíncrono que cumple la firma definida en IServicioCorreo, notifica al alumno que su matrícula fue cancelada
+        // TODO: Llamadas asíncronas - Construye el correo HTML y delega el envío a EnviarCorreoAsync mediante await
         public async Task EnviarCancelacionMatriculaAsync(
             string destinatario,
             string nombreAlumno,
@@ -251,6 +260,9 @@ namespace CAPA_NEGOCIOS
                 mensajeHtml
             );
         }
+
+        // TODO: Llamadas asíncronas - Método asíncrono adicional (no exigido por IServicioCorreo) que envía el recibo de pago con el detalle de la transacción
+        // TODO: Interfaces Y Asincrónicos - Construye el correo HTML y delega el envío a EnviarCorreoAsync mediante await; se usa desde frmPagos tras registrar un pago
         public async Task EnviarConfirmacionPagoAsync(
             string destinatario,
             string nombreAlumno,

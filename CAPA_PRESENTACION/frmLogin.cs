@@ -8,6 +8,8 @@ using CAPA_NEGOCIOS;
 
 namespace CAPA_PRESENTACION
 {
+    // TODO: Arquitectura en Capas - Formulario perteneciente a CAPA_PRESENTACION, es el formulario de Login del sistema
+    // TODO: Login - Formulario para el acceso con conexión a base de datos, valida usuario y contraseña antes de dar paso al formulario principal
     public partial class frmLogin : Form
     {
         // Paneles principales
@@ -51,6 +53,7 @@ namespace CAPA_PRESENTACION
             AplicarDiseno();
         }
 
+        // TODO: Clases creadas según su uso, sin código ajeno - Método orquestador que arma el diseño completo del login, delega cada parte a métodos específicos, evita reaplicar el diseño más de una vez con la bandera disenoAplicado
         private void AplicarDiseno()
         {
             if (disenoAplicado)
@@ -70,6 +73,7 @@ namespace CAPA_PRESENTACION
             BackColor = Color.FromArgb(5, 21, 53);
             DoubleBuffered = true;
 
+            // TODO: Login - Permite presionar Enter para ingresar, definiendo btnIngresar como AcceptButton del formulario
             // Permite presionar Enter para ingresar.
             AcceptButton = btnIngresar;
 
@@ -192,6 +196,7 @@ namespace CAPA_PRESENTACION
         // PANEL IZQUIERDO CON EL LOGO
         // ====================================================
 
+        // TODO: Logo - Crea el panel de marca y carga el logo de Lexbridge desde los recursos del proyecto (Properties.Resources.LogoLexbridge)
         private void CrearPanelMarca()
         {
             pnlMarca = new Panel
@@ -232,6 +237,7 @@ namespace CAPA_PRESENTACION
         // TARJETA DEL LOGIN
         // ====================================================
 
+        // TODO: Login - Crea la tarjeta visual que contiene los campos de usuario, contraseña y el botón de ingreso
         private void CrearTarjetaLogin()
         {
             pnlTarjeta = new Panel
@@ -301,6 +307,7 @@ namespace CAPA_PRESENTACION
             txtContrasena.PlaceholderText =
                 "Ingrese su contraseña";
 
+            // TODO: Contraseña no legible - UseSystemPasswordChar oculta el texto ingresado en el campo de contraseña, cumple el requisito de que la contraseña no sea legible en el login
             txtContrasena.UseSystemPasswordChar = true;
 
             txtUsuario.TabIndex = 0;
@@ -442,6 +449,8 @@ namespace CAPA_PRESENTACION
             pnlTarjeta.Controls.Add(btnWindows);
         }
 
+        // TODO: Login - Inicio de sesión alternativo usando la identidad de Windows activa en el equipo, en vez de validar contra la tabla USUARIOS
+        // TODO: Captura de error (try-catch) - Envuelve la obtención de la identidad de Windows y la apertura del formulario principal en try-catch, evitando el cierre forzado de la aplicación
         private void btnWindows_Click(
             object sender,
             EventArgs e)
@@ -828,6 +837,8 @@ namespace CAPA_PRESENTACION
         // APERTURA DEL FORMULARIO PRINCIPAL
         // ====================================================
 
+        // TODO: Login - El login se cierra al validar usuario/contraseña (Close() dentro del evento FormClosed del principal) y deja abierto el formulario principal (Show())
+        // TODO: Formulario principal - Abre frmPrincipal tras una autenticación exitosa, ya sea por usuario/contraseña o por sesión de Windows
         private void AbrirFormularioPrincipal()
         {
             if (formularioPrincipalAbierto)
@@ -859,6 +870,9 @@ namespace CAPA_PRESENTACION
         // VALIDACIÓN ORIGINAL
         // ====================================================
 
+        // TODO: Login - Evento del botón Ingresar que valida usuario y contraseña contra la base de datos mediante GestorLogin (CAPA_NEGOCIOS)
+        // TODO: Arquitectura en Capas - Delega la validación de credenciales a GestorLogin (CAPA_NEGOCIOS), el formulario no accede directamente a CAPA_DATOS
+        // TODO: Captura de error (try-catch) - Envuelve la validación de acceso en try-catch para evitar el cierre forzado de la aplicación
         private void btnIngresar_Click(
             object sender,
             EventArgs e)
