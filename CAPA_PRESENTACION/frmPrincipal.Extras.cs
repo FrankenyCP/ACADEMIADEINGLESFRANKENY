@@ -47,6 +47,7 @@ namespace CAPA_PRESENTACION
 
         private FlowLayoutPanel flpMenu = null!;
         private Button btnDashboardPrincipal = null!;
+        private Button btnAcercaDe = null!;
 
         private TableLayoutPanel tlpPrincipal = null!;
         private TableLayoutPanel tlpCentro = null!;
@@ -202,18 +203,23 @@ namespace CAPA_PRESENTACION
                 return;
             }
 
+            bool primeraApertura =
+                value && !formularioMostrado;
+
             if (value && !disenoInicializado)
             {
-                disenoInicializado = true;
-
                 try
                 {
                     InicializarDisenoModerno();
                     InicializarFuncionesExtras();
                     AjustarContenidoDesplazable();
+
+                    disenoInicializado = true;
                 }
                 catch (Exception ex)
                 {
+                    disenoInicializado = false;
+
                     MessageBox.Show(
                         "Error al preparar el formulario:\r\n" +
                         ex.Message,
@@ -226,13 +232,18 @@ namespace CAPA_PRESENTACION
 
             base.SetVisibleCore(value);
 
-            if (value)
+            if (primeraApertura &&
+                disenoInicializado &&
+                pnlDashboardPrincipal != null &&
+                pnlContenedorModulos != null)
             {
                 formularioMostrado = true;
 
-                // Dashboard ya construido y listo.
-                pnlDashboardPrincipal.Visible = true;
                 pnlContenedorModulos.Visible = false;
+
+                pnlDashboardPrincipal.Visible = true;
+                pnlDashboardPrincipal.Dock = DockStyle.Fill;
+                pnlDashboardPrincipal.BringToFront();
             }
         }
 
@@ -645,6 +656,14 @@ namespace CAPA_PRESENTACION
                 "Consulta"
             );
 
+            btnAcercaDe = new Button();
+
+            ConfigurarBotonMenu(
+                btnAcercaDe,
+                "\uE946",
+                "Acerca de"
+            );
+
             btnSalir.Parent = pnlSalir;
             btnSalir.Dock = DockStyle.Fill;
             btnSalir.Text = "Cerrar aplicacion";
@@ -764,6 +783,7 @@ namespace CAPA_PRESENTACION
             QuitarEventosClick(btnPagos);
             QuitarEventosClick(btnReportes);
             QuitarEventosClick(btnConsultaMatriculas);
+            QuitarEventosClick(btnAcercaDe);
 
             btnDashboardPrincipal.Click += (sender, e) =>
             {
@@ -804,6 +824,13 @@ namespace CAPA_PRESENTACION
             {
                 AbrirModuloEnPrincipal(
                     new frmConsultaMatriculas()
+                );
+            };
+
+            btnAcercaDe.Click += (sender, e) =>
+            {
+                AbrirModuloEnPrincipal(
+                    new frmAcercaDe()
                 );
             };
 
@@ -967,6 +994,10 @@ namespace CAPA_PRESENTACION
 
                 case frmConsultaMatriculas consulta:
                     consulta.PrepararModoIntegrado();
+                    break;
+
+                case frmAcercaDe acercaDe:
+                    acercaDe.PrepararModoIntegrado();
                     break;
 
                 default:
